@@ -1,0 +1,20 @@
+# Ignore the live skill installation by default. Explicitly allow only the
+# curated public collection below.
+*
+!.gitignore
+!README.md
+!LICENSE
+!NOTICE.md
+!skills/
+!skills/changeset/
+!skills/changeset/**
+!skills/comment-auditor/
+!skills/comment-auditor/**
+!skills/effect/
+!skills/effect/**
+!skills/effect-service/
+!skills/effect-service/**
+!skills/explain-diff/
+!skills/explain-diff/**
+!skills/report-builder/
+!skills/report-builder/**

@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Report design system</title>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem('report-theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        document.documentElement.dataset.theme = savedTheme;
+      }
+    } catch {}
+  </script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --color-paper: light-dark(oklch(0.985 0.002 255), oklch(0.19 0.006 255));
+      --color-surface: light-dark(oklch(0.998 0.001 255), oklch(0.235 0.006 255));
+      --color-note: light-dark(oklch(0.955 0.006 255), oklch(0.285 0.008 255));
+      --color-ink: light-dark(oklch(0.25 0.008 255), oklch(0.93 0.005 255));
+      --color-muted: light-dark(oklch(0.48 0.012 255), oklch(0.70 0.010 255));
+      --color-rule: light-dark(oklch(0.86 0.007 255), oklch(0.37 0.009 255));
+      --color-rule-strong: light-dark(oklch(0.68 0.011 255), oklch(0.55 0.010 255));
+      --color-link: light-dark(oklch(0.43 0.100 250), oklch(0.75 0.085 250));
+      --color-info: light-dark(oklch(0.43 0.145 250), oklch(0.79 0.115 250));
+      --color-info-surface: light-dark(oklch(0.95 0.030 250), oklch(0.27 0.035 250));
+      --color-success: light-dark(oklch(0.40 0.135 151), oklch(0.80 0.125 151));
+      --color-success-surface: light-dark(oklch(0.95 0.035 151), oklch(0.27 0.035 151));
+      --color-warning: light-dark(oklch(0.43 0.130 65), oklch(0.84 0.125 75));
+      --color-warning-surface: light-dark(oklch(0.96 0.045 80), oklch(0.29 0.040 70));
+      --color-danger: light-dark(oklch(0.43 0.165 28), oklch(0.80 0.145 28));
+      --color-danger-surface: light-dark(oklch(0.95 0.035 28), oklch(0.28 0.045 28));
+      --color-data-1: light-dark(oklch(0.50 0.185 300), oklch(0.76 0.155 300));
+      --color-data-2: light-dark(oklch(0.48 0.150 230), oklch(0.78 0.130 230));
+      --color-data-3: light-dark(oklch(0.45 0.125 175), oklch(0.77 0.125 175));
+      --color-data-4: light-dark(oklch(0.48 0.175 345), oklch(0.78 0.145 345));
+      --color-data-5: light-dark(oklch(0.50 0.160 45), oklch(0.81 0.145 55));
+      --color-data-6: light-dark(oklch(0.45 0.155 265), oklch(0.76 0.135 265));
+      --color-code: light-dark(oklch(0.22 0.009 255), oklch(0.14 0.006 255));
+      --color-code-ink: oklch(0.94 0.004 255);
+      --color-print-paper: #fff;
+      --color-print-ink: #111;
+      --color-print-muted: #333;
+
+      --surface-page: var(--color-paper);
+      --surface-raised: var(--color-surface);
+      --surface-note: var(--color-note);
+      --surface-code: var(--color-code);
+      --text-primary: var(--color-ink);
+      --text-secondary: var(--color-muted);
+      --text-link: var(--color-link);
+      --text-code: var(--color-code-ink);
+      --border-subtle: var(--color-rule);
+      --border-strong: var(--color-rule-strong);
+      --surface-info: var(--color-info-surface);
+      --surface-success: var(--color-success-surface);
+      --surface-warning: var(--color-warning-surface);
+      --surface-danger: var(--color-danger-surface);
+      --state-info: var(--color-info);
+      --state-success: var(--color-success);
+      --state-warning: var(--color-warning);
+      --state-danger: var(--color-danger);
+      --state-inferred: var(--state-info);
+      --state-verified: var(--state-success);
+      --state-open: var(--state-warning);
+      --state-risk: var(--state-danger);
+
+      --font-reading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-technical: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --text-display-1: clamp(2.25rem, 5vw, 3rem);
+      --text-display-2: clamp(1.8rem, 4vw, 2.25rem);
+      --text-heading-1: clamp(1.4rem, 3vw, 1.65rem);
+      --text-heading-2: 1.2rem;
+      --text-heading-3: 1rem;
+      --text-body-1: 1rem;
+      --text-body-2: 0.875rem;
+      --text-label-1: 0.75rem;
+      --leading-tight: 1.25;
+      --leading-body: 1.65;
+      --measure: 50rem;
+      --measure-wide: 72rem;
+      --radius-sm: 0.375rem;
+      --radius-md: 0.625rem;
+      --space-1: 0.375rem;
+      --space-2: 0.75rem;
+      --space-3: 1.25rem;
+      --space-4: 2rem;
+      --space-5: 3rem;
+      --space-6: 4.5rem;
+
+      /* Component roles. Extend these before adding component CSS. */
+      --panel-surface: var(--surface-raised);
+      --panel-border: var(--border-subtle);
+      --panel-radius: var(--radius-md);
+      --control-surface: var(--surface-raised);
+      --control-surface-hover: var(--surface-note);
+      --control-border: var(--border-strong);
+      --control-accent: var(--text-link);
+      --control-invalid: var(--state-danger);
+      --inline-code-surface: var(--surface-note);
+      --inline-code-border: var(--border-subtle);
+      --inline-code-text: var(--text-primary);
+      --focus-ring: var(--text-link);
+      --focus-ring-width: 0.1875rem;
+      --focus-ring-offset: 0.1875rem;
+    }
+
+    html[data-theme="light"] { color-scheme: light; }
+    html[data-theme="dark"] { color-scheme: dark; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body { margin: 0; background: var(--surface-page); color: var(--text-primary); font: var(--text-body-1)/var(--leading-body) var(--font-reading); overflow-wrap: break-word; }
+    main { inline-size: min(calc(100% - 2rem), var(--measure)); margin-inline: auto; padding-block: var(--space-5) var(--space-6); }
+    main.wide { inline-size: min(calc(100% - 2rem), var(--measure-wide)); }
+    :is(header, section, nav, footer, figure, details, article, aside) { min-inline-size: 0; }
+    main > section { margin-block-start: var(--space-6); }
+    :is(h1, h2, h3, h4, h5, h6) { margin: 0; font: inherit; text-wrap: balance; }
+    .display-1, .display-2, .heading-1, .heading-2, .heading-3 { font-weight: 700; line-height: var(--leading-tight); text-wrap: balance; }
+    .display-1 { font-size: var(--text-display-1); letter-spacing: -0.04em; }
+    .display-2 { font-size: var(--text-display-2); letter-spacing: -0.035em; }
+    .heading-1 { font-size: var(--text-heading-1); letter-spacing: -0.025em; }
+    .heading-2 { font-size: var(--text-heading-2); letter-spacing: -0.012em; }
+    .heading-3 { font-size: var(--text-heading-3); }
+    .body-1 { font-size: var(--text-body-1); line-height: var(--leading-body); }
+    .body-2 { font-size: var(--text-body-2); line-height: 1.55; }
+    .label-1 { font: 700 var(--text-label-1)/1.4 var(--font-technical); letter-spacing: 0.045em; text-transform: uppercase; }
+    .code-1 { font: var(--text-body-2)/1.55 var(--font-technical); }
+    section > :is(h3, h4, h5, h6):not(:first-child) { margin-block-start: var(--space-4); }
+    :is(h2, h3, h4, h5, h6) + * { margin-top: var(--space-2); }
+    :is(p, ul, ol, dl, table, blockquote, pre) { margin-block: var(--space-3) 0; }
+    :is(ul, ol) { padding-inline-start: 1.35rem; }
+    li + li { margin-top: var(--space-1); }
+    li > :is(ul, ol) { margin-block: var(--space-1) 0; }
+    dt { margin-top: var(--space-3); font-weight: 700; }
+    dd { margin: var(--space-1) 0 0; }
+    a { color: var(--text-link); text-decoration-thickness: from-font; text-underline-offset: 0.2em; }
+    a:hover { text-decoration-thickness: 0.13em; }
+    hr { margin-block: var(--space-5); border: 0; border-block-start: 1px solid var(--border-subtle); }
+    code, kbd, samp, .mono { font-family: var(--font-technical); }
+    :not(pre) > code { padding: 0.12em 0.35em; border: 1px solid var(--inline-code-border); border-radius: var(--radius-sm); background: var(--inline-code-surface); color: var(--inline-code-text); font-size: 0.92em; overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+    pre { overflow: auto; padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-code); color: var(--text-code); white-space: pre; tab-size: 2; }
+    pre code { font-size: var(--text-body-2); }
+    blockquote { margin-inline: 0; padding-inline-start: var(--space-3); border-inline-start: 3px solid var(--border-strong); color: var(--text-secondary); }
+    table { inline-size: 100%; border-collapse: collapse; font-size: var(--text-body-2); font-variant-numeric: tabular-nums; }
+    caption, figcaption { color: var(--text-secondary); font-size: var(--text-body-2); text-align: left; }
+    caption { margin-bottom: var(--space-2); }
+    th, td { padding: var(--space-2); border-bottom: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
+    th { font-weight: 700; }
+    figure { margin: var(--space-4) 0 0; }
+    figure > img, figure > svg { display: block; max-inline-size: 100%; block-size: auto; margin-inline: auto; }
+    figure > figcaption { margin-top: var(--space-2); }
+    img { display: block; max-inline-size: 100%; block-size: auto; }
+    :root { accent-color: var(--control-accent); caret-color: var(--control-accent); }
+    :where(button, input, select, textarea) { font: inherit; }
+    :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="color"]), select, textarea) { inline-size: min(100%, 32rem); min-block-size: 2.75rem; padding: 0.55rem 0.7rem; border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--control-surface); color: var(--text-primary); }
+    textarea { min-block-size: 7rem; resize: vertical; }
+    ::placeholder { color: var(--text-secondary); opacity: 1; }
+    fieldset { margin: var(--space-3) 0 0; padding: var(--space-3); border: 1px solid var(--panel-border); border-radius: var(--panel-radius); }
+    legend, label { font-weight: 650; }
+    :where(input, select, textarea)[aria-invalid="true"] { border-color: var(--control-invalid); }
+    :where(button, input, select, textarea):disabled { cursor: not-allowed; opacity: 0.58; }
+    :where(input[type="checkbox"], input[type="radio"]) { inline-size: 1.125rem; block-size: 1.125rem; vertical-align: -0.15em; }
+    :where(input[type="range"], progress, meter) { inline-size: min(100%, 22rem); accent-color: var(--control-accent); }
+    button { min-block-size: 2.75rem; padding: 0.45rem 0.75rem; border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--control-surface); color: var(--text-primary); font: inherit; cursor: pointer; touch-action: manipulation; }
+    button:not(:disabled):hover { background: var(--control-surface-hover); }
+    :is(button, input, select, textarea, a, summary, [tabindex]):focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring); outline-offset: var(--focus-ring-offset); }
+    :target { scroll-margin-block-start: var(--space-4); }
+    .skip-link { position: fixed; z-index: 10; inset-block-start: var(--space-2); inset-inline-start: var(--space-2); transform: translateY(-200%); padding: var(--space-2); border-radius: var(--radius-sm); background: var(--panel-surface); }
+    .skip-link:focus { transform: none; }
+    .report-header { padding-bottom: var(--space-4); border-bottom: 1px solid var(--border-subtle); }
+    .eyebrow, .meta, .state { font: 700 var(--text-label-1)/1.4 var(--font-technical); letter-spacing: 0.045em; text-transform: uppercase; }
+    .eyebrow, .meta { color: var(--text-secondary); }
+    .lede { max-inline-size: 46rem; margin-top: var(--space-3); color: var(--text-secondary); font-size: 1.08rem; }
+    .report-meta { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-3); }
+    .orientation { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+    section > .orientation { margin-top: var(--space-3); }
+    .summary-card { padding: var(--space-3); border: 1px solid var(--panel-border); border-radius: var(--panel-radius); background: var(--panel-surface); }
+    .summary-card.info { border-color: var(--state-info); background: var(--surface-info); }
+    .summary-card.success { border-color: var(--state-success); background: var(--surface-success); }
+    .summary-card.warning { border-color: var(--state-warning); background: var(--surface-warning); }
+    .summary-card.error { border-color: var(--state-danger); background: var(--surface-danger); }
+    .summary-card > b { display: block; margin-bottom: var(--space-1); font: 700 var(--text-label-1)/1.4 var(--font-technical); letter-spacing: 0.045em; text-transform: uppercase; }
+    .toc { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); margin-top: var(--space-3); padding-block: var(--space-2); border-bottom: 1px solid var(--border-subtle); font: var(--text-label-1)/1.5 var(--font-technical); }
+    .toc strong { color: var(--text-primary); }
+    .toc a { display: inline-flex; align-items: center; min-block-size: 2rem; color: var(--text-secondary); text-decoration: none; }
+    .toc a:hover { color: var(--text-link); text-decoration: underline; }
+    :is(.callout, .figure, details) { border: 1px solid var(--panel-border); border-radius: var(--panel-radius); background: var(--panel-surface); }
+    .callout { margin-top: var(--space-3); padding: var(--space-3); border-inline-start: 3px solid var(--border-strong); }
+    .callout.verified { border-inline-start-color: var(--state-verified); background: var(--surface-success); }
+    .callout.inferred { border-inline-start-color: var(--state-inferred); background: var(--surface-info); }
+    .callout.open { border-inline-start-color: var(--state-open); background: var(--surface-warning); }
+    .callout.risk { border-inline-start-color: var(--state-risk); background: var(--surface-danger); }
+    .callout > :last-child, details > :last-child { margin-bottom: 0; }
+    .state.verified { color: var(--state-verified); }
+    .state.inferred { color: var(--state-inferred); }
+    .state.open { color: var(--state-open); }
+    .state.risk { color: var(--state-risk); }
+    .figure { padding: var(--space-3); }
+    details { margin-top: var(--space-3); padding: var(--space-2) var(--space-3); }
+    summary { padding-block: var(--space-1); font-weight: 700; cursor: pointer; touch-action: manipulation; }
+    .source-ref { display: inline-block; margin-top: var(--space-2); padding: 0.18rem 0.35rem; border-radius: var(--radius-sm); background: var(--surface-note); font: var(--text-label-1)/1.45 var(--font-technical); }
+    .report-footer { inline-size: min(calc(100% - 2rem), var(--measure)); margin: 0 auto; padding-block: var(--space-3); border-block-start: 1px solid var(--border-subtle); color: var(--text-secondary); font-size: var(--text-body-2); }
+    .theme-toggle { position: fixed; inset-block-start: var(--space-2); inset-inline-end: var(--space-2); font-size: var(--text-body-2); }
+    .table-scroll { max-inline-size: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+    .data-key { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); padding: 0; list-style: none; }
+    .data-key li { display: inline-flex; align-items: center; gap: var(--space-1); margin: 0; }
+    .data-swatch { inline-size: 1rem; block-size: 1rem; border: 1px solid var(--border-strong); border-radius: 0.2rem; background: var(--data-color); }
+    .data-swatch[data-color="1"] { --data-color: var(--color-data-1); }
+    .data-swatch[data-color="2"] { --data-color: var(--color-data-2); }
+    .data-swatch[data-color="3"] { --data-color: var(--color-data-3); }
+    .data-swatch[data-color="4"] { --data-color: var(--color-data-4); }
+    .data-swatch[data-color="5"] { --data-color: var(--color-data-5); }
+    .data-swatch[data-color="6"] { --data-color: var(--color-data-6); }
+
+    @media (max-width: 40rem) {
+      :root { --space-5: 2.25rem; --space-6: 3.25rem; }
+      main { inline-size: min(calc(100% - 1.25rem), var(--measure)); }
+      .theme-toggle { position: static; float: right; margin: var(--space-2); }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media (prefers-contrast: more) {
+      :root { --text-secondary: var(--text-primary); --border-subtle: var(--border-strong); }
+      a { text-decoration-thickness: 0.12em; }
+    }
+    @media (forced-colors: active) {
+      :root {
+        --focus-ring: Highlight;
+        --state-verified: CanvasText;
+        --state-inferred: CanvasText;
+        --state-open: CanvasText;
+        --state-risk: CanvasText;
+      }
+      :is(.callout, .summary-card, .figure, details) { border-color: CanvasText; }
+      :is(button, a, summary):focus-visible { outline-color: Highlight; }
+    }
+    @media print {
+      html, html[data-theme="dark"], html[data-theme="light"] { color-scheme: light; --surface-page: var(--color-print-paper); --surface-raised: var(--color-print-paper); --text-primary: var(--color-print-ink); --text-secondary: var(--color-print-muted); }
+      body { background: var(--surface-page); color: var(--text-primary); }
+      main, main.wide, .report-footer { inline-size: 100%; max-inline-size: none; padding: 0; }
+      .skip-link, .theme-toggle { display: none; }
+      a { color: inherit; }
+      .figure, details, table, pre { break-inside: avoid; }
+      details:not([open]) > :not(summary) { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to report</a>
+  <button class="theme-toggle" type="button" aria-label="Change color theme">Theme: auto</button>
+
+  <main id="main-content" tabindex="-1">
+    <header class="report-header">
+      <p class="eyebrow">Component catalog</p>
+      <h1 class="display-1">Report design system</h1>
+      <p class="lede">A living baseline of semantic HTML and shared report components rendered only with the scaffold CSS.</p>
+      <div class="report-meta" aria-label="Report metadata">
+        <span class="meta">Version 1</span>
+        <span class="meta">Light · dark · print · forced colors</span>
+      </div>
+    </header>
+
+    <aside class="orientation" aria-label="Catalog orientation">
+      <div class="summary-card"><b>Purpose</b><span>Expose every shared primitive in one place.</span></div>
+      <div class="summary-card"><b>Constraint</b><span>No specimen-specific CSS.</span></div>
+      <div class="summary-card"><b>Review</b><span>Check hierarchy, rhythm, contrast, and behavior.</span></div>
+    </aside>
+
+    <nav class="toc" aria-label="On this page">
+      <strong>On this page</strong>
+      <a href="#type">Typography</a>
+      <a href="#inline">Inline text</a>
+      <a href="#lists">Lists</a>
+      <a href="#code">Code</a>
+      <a href="#tables">Tables</a>
+      <a href="#components">Components</a>
+      <a href="#figures">Figures</a>
+      <a href="#color">Color</a>
+      <a href="#controls">Controls</a>
+      <a href="#disclosure">Disclosure</a>
+    </nav>
+
+    <section id="type" aria-labelledby="type-title">
+      <h2 class="heading-1" id="type-title">Typography and hierarchy</h2>
+      <p>HTML heading ranks express document structure; type classes express visual role. Choose the correct element first, then apply the smallest class that communicates the intended emphasis. The specimens use neutral paragraphs to prove that no type role depends on a particular tag.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Typography specimen table">
+        <table>
+          <caption>Purpose-led type roles rendered by the scaffold</caption>
+          <thead><tr><th scope="col">Class</th><th scope="col">Rendered specimen</th><th scope="col">Intended use</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>.display-1</code></th><td><div class="display-1">Report title</div></td><td>Primary report title only</td></tr>
+            <tr><th scope="row"><code>.display-2</code></th><td><div class="display-2">Compact title</div></td><td>Short title in a dense or secondary context</td></tr>
+            <tr><th scope="row"><code>.heading-1</code></th><td><div class="heading-1">Major section</div></td><td>Top-level report sections</td></tr>
+            <tr><th scope="row"><code>.heading-2</code></th><td><div class="heading-2">Subsection</div></td><td>Groups within a major section</td></tr>
+            <tr><th scope="row"><code>.heading-3</code></th><td><div class="heading-3">Minor heading</div></td><td>Local distinctions and compact groups</td></tr>
+            <tr><th scope="row"><code>.body-1</code></th><td><div class="body-1">Primary reading text.</div></td><td>Paragraphs and sustained prose</td></tr>
+            <tr><th scope="row"><code>.body-2</code></th><td><div class="body-2">Supporting text and captions.</div></td><td>Secondary copy used sparingly</td></tr>
+            <tr><th scope="row"><code>.label-1</code></th><td><span class="label-1">Evidence · 14 July</span></td><td>Short metadata, categories, and states</td></tr>
+            <tr><th scope="row"><code>.code-1</code></th><td><span class="code-1">report.build()</span></td><td>Technical labels and compact code</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout inferred"><span class="state inferred">Semantic independence</span><p><code>&lt;h2 class="display-2"&gt;</code> remains a level-two heading for assistive technology while receiving the compact display treatment. Never choose an HTML rank to obtain a font size.</p></div>
+      <h3 class="heading-2">Long-form reading rhythm</h3>
+      <p>This longer paragraph remains outside the specimen table to demonstrate the reading measure, line height, wrapping, and paragraph rhythm used for sustained technical prose. A report should remain comfortable to scan without forcing every statement into a card or condensed label.</p>
+      <blockquote>
+        <p>A blockquote carries attributed material or a statement intentionally separated from the author’s main voice.</p>
+        <footer>— Example attribution, <cite>Example source</cite></footer>
+      </blockquote>
+    </section>
+
+    <section id="inline" aria-labelledby="inline-title">
+      <h2 class="heading-1" id="inline-title">Inline text semantics</h2>
+      <p><strong>Strong importance</strong>, <em>emphasis</em>, <small>small print</small>, <mark>highlighted relevance</mark>, <del>removed text</del>, <ins>inserted text</ins>, and an <a href="#components">ordinary internal link</a>.</p>
+      <p><abbr title="Web Content Accessibility Guidelines">WCAG</abbr>, H<sub>2</sub>O, x<sup>2</sup>, <time datetime="2026-07-14">14 July 2026</time>, <q>an inline quotation</q>, <code>inlineCode()</code>, <kbd>⌘</kbd> + <kbd>K</kbd>, <samp>build complete</samp>, and <var>n</var>.</p>
+      <address>Report owner · engineering@example.test</address>
+    </section>
+
+    <section id="lists" aria-labelledby="lists-title">
+      <h2 class="heading-1" id="lists-title">Lists and definitions</h2>
+      <h3 class="heading-2">Unordered list</h3>
+      <ul>
+        <li>First supporting point</li>
+        <li><span>Second point with a nested list</span>
+          <ul>
+            <li>Nested supporting detail</li>
+            <li>Another nested detail with enough text to demonstrate wrapping and indentation.</li>
+          </ul>
+        </li>
+        <li>Final supporting point</li>
+      </ul>
+      <h3 class="heading-2">Ordered list</h3>
+      <ol><li>Establish the reader question.</li><li>Inspect the evidence.</li><li>State the bounded conclusion.</li></ol>
+      <h3 class="heading-2">Description list</h3>
+      <dl>
+        <dt>Verified</dt><dd>Directly supported by inspected evidence.</dd>
+        <dt>Inferred</dt><dd>A reasoned interpretation that is not directly demonstrated.</dd>
+      </dl>
+    </section>
+
+    <section id="code" aria-labelledby="code-title">
+      <h2 class="heading-1" id="code-title">Code and technical content</h2>
+      <p>Inline code should remain distinct without interrupting prose. Long identifiers such as <code>resolveArchitectureRecommendationFromInspectedEvidence()</code> must wrap safely.</p>
+      <pre><code>export function summarize(claims) {
+  return claims.filter((claim) =&gt; claim.material)
+    .map((claim) =&gt; claim.summary)
+}</code></pre>
+    </section>
+
+    <section id="tables" aria-labelledby="tables-title">
+      <h2 class="heading-1" id="tables-title">Tables</h2>
+      <p>The table is introduced in prose and placed in a labeled horizontal overflow region for narrow screens.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Report profile comparison table">
+        <table>
+          <caption>Report profiles and their expected endings</caption>
+          <thead><tr><th scope="col">Profile</th><th scope="col">Reader job</th><th scope="col">Expected ending</th><th scope="col">Typical evidence</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Review</th><td>Judge findings</td><td>Prioritized actions</td><td>Source and tests</td></tr>
+            <tr><th scope="row">Decision</th><td>Choose an option</td><td>Decision and consequences</td><td>Drivers and trade-offs</td></tr>
+            <tr><th scope="row">Research</th><td>Understand sources</td><td>Synthesis and gaps</td><td>Primary references</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="components" aria-labelledby="components-title">
+      <h2 class="heading-1" id="components-title">Report components</h2>
+      <h3 class="heading-2">Summary cards</h3>
+      <aside class="orientation" aria-label="Example report orientation">
+        <div class="summary-card"><b>Outcome</b><span>The primary behavior is verified.</span></div>
+        <div class="summary-card"><b>Confidence</b><span>Source review and targeted test.</span></div>
+        <div class="summary-card"><b>Open check</b><span>Confirm downstream callers.</span></div>
+      </aside>
+
+      <h3 class="heading-2">Semantic summary cards</h3>
+      <p>Use semantic modifiers only when an orientation fact has an outcome or operational condition. Evidence posture uses verified, inferred, open, and risk instead.</p>
+      <aside class="orientation" aria-label="Semantic summary card variants">
+        <div class="summary-card info"><b>Information</b><span>Context that changes how the report should be read.</span></div>
+        <div class="summary-card success"><b>Success</b><span>A desired result has been verified.</span></div>
+        <div class="summary-card warning"><b>Warning</b><span>A condition needs attention before proceeding.</span></div>
+        <div class="summary-card error"><b>Error</b><span>A blocking failure requires action.</span></div>
+      </aside>
+
+      <h3 class="heading-2">Callouts and evidence states</h3>
+      <div class="callout"><span class="state">Note</span><p>Neutral context that deserves separation from the surrounding argument.</p></div>
+      <div class="callout verified"><span class="state verified">Verified</span><p>This result is directly supported by inspected evidence.</p></div>
+      <div class="callout inferred"><span class="state inferred">Inferred</span><p>This interpretation follows from evidence but was not directly demonstrated.</p></div>
+      <div class="callout open"><span class="state open">Open</span><p>This question remains unresolved and may change the conclusion.</p></div>
+      <div class="callout risk"><span class="state risk">Risk</span><p>This credible adverse consequence needs consideration.</p></div>
+
+      <h3 class="heading-2">Source reference</h3>
+      <p>A source action sits beside the claim it supports.</p>
+      <a class="source-ref" href="#tables">Inspect profile comparison · table</a>
+    </section>
+
+    <section id="figures" aria-labelledby="figures-title">
+      <h2 class="heading-1" id="figures-title">Figures and media</h2>
+      <figure class="figure">
+        <svg viewBox="0 0 640 180" role="img" aria-labelledby="diagram-title diagram-description">
+          <title id="diagram-title">Three-depth report model</title>
+          <desc id="diagram-description">Glance leads to scan, which leads to inspect.</desc>
+          <rect x="20" y="55" width="160" height="70" rx="8" fill="none" stroke="currentColor" />
+          <rect x="240" y="55" width="160" height="70" rx="8" fill="none" stroke="currentColor" />
+          <rect x="460" y="55" width="160" height="70" rx="8" fill="none" stroke="currentColor" />
+          <path d="M180 90 H240 M400 90 H460" fill="none" stroke="currentColor" />
+          <text x="100" y="95" text-anchor="middle" fill="currentColor">Glance</text>
+          <text x="320" y="95" text-anchor="middle" fill="currentColor">Scan</text>
+          <text x="540" y="95" text-anchor="middle" fill="currentColor">Inspect</text>
+        </svg>
+        <figcaption>The shared report model moves from orientation to navigation to supporting depth.</figcaption>
+      </figure>
+    </section>
+
+    <section id="color" aria-labelledby="color-title">
+      <h2 class="heading-1" id="color-title">Color for data and status</h2>
+      <p>Status colors communicate meaning and always appear with a text label. Data colors distinguish unrelated categories and follow a fixed sequence so neighboring values remain easier to tell apart.</p>
+      <h3 class="heading-2">Categorical data sequence</h3>
+      <ul class="data-key" aria-label="Six-color categorical data sequence">
+        <li><span class="data-swatch" data-color="1" aria-hidden="true"></span>Category 1</li>
+        <li><span class="data-swatch" data-color="2" aria-hidden="true"></span>Category 2</li>
+        <li><span class="data-swatch" data-color="3" aria-hidden="true"></span>Category 3</li>
+        <li><span class="data-swatch" data-color="4" aria-hidden="true"></span>Category 4</li>
+        <li><span class="data-swatch" data-color="5" aria-hidden="true"></span>Category 5</li>
+        <li><span class="data-swatch" data-color="6" aria-hidden="true"></span>Category 6</li>
+      </ul>
+      <p><small>Use one data color by default. Add colors only when categories need differentiation, and pair them with direct labels, shapes, patterns, or separators.</small></p>
+    </section>
+
+    <section id="controls" aria-labelledby="controls-title">
+      <h2 class="heading-1" id="controls-title">Native controls</h2>
+      <p>The shared baseline keeps native behavior while aligning controls with report surfaces, focus, accent, disabled, and invalid states. Every control still needs appropriate semantics, a persistent label, and any relevant hint or error association.</p>
+      <form>
+        <fieldset>
+          <legend>Report preferences</legend>
+          <p><label for="title-input">Report title</label><br /><input id="title-input" name="title" type="text" value="Architecture review" /></p>
+          <p><label for="search-input">Search findings</label><br /><input id="search-input" name="search" type="search" placeholder="Cache invalidation" /></p>
+          <p><label for="number-input">Maximum findings</label><br /><input id="number-input" name="maximum" type="number" min="1" max="20" value="5" /></p>
+          <p><label for="date-input">Review date</label><br /><input id="date-input" name="date" type="date" value="2026-07-14" /></p>
+          <p><label for="profile-select">Profile</label><br /><select id="profile-select" name="profile"><option>Review</option><option>Decision</option><option>Research</option></select></p>
+          <p><label for="notes-input">Notes</label><br /><textarea id="notes-input" name="notes" rows="4">Keep the primary claim visible.</textarea></p>
+          <p><label for="range-input">Evidence threshold</label><br /><input id="range-input" name="threshold" type="range" min="0" max="100" value="70" /></p>
+          <p><label><input type="checkbox" checked /> Include evidence boundaries</label> <label><input type="checkbox" disabled /> Disabled option</label></p>
+          <p><label><input type="radio" name="density" checked /> Comfortable</label> <label><input type="radio" name="density" /> Compact</label></p>
+          <p><label for="invalid-input">Invalid example</label><br /><input id="invalid-input" name="invalid" type="text" value="Missing owner" aria-invalid="true" aria-describedby="invalid-help" /> <small id="invalid-help">Assign an owner before publishing.</small></p>
+          <p><label for="disabled-input">Disabled field</label><br /><input id="disabled-input" type="text" value="Unavailable" disabled /></p>
+          <button type="button">Example action</button>
+          <button type="button" disabled>Disabled action</button>
+        </fieldset>
+      </form>
+      <p><label for="progress-example">Report completion</label><br /><progress id="progress-example" max="100" value="68">68%</progress></p>
+      <p><label for="confidence-example">Evidence confidence</label><br /><meter id="confidence-example" min="0" max="1" low="0.4" high="0.8" optimum="1" value="0.72">72%</meter></p>
+    </section>
+
+    <section id="disclosure" aria-labelledby="disclosure-title">
+      <h2 class="heading-1" id="disclosure-title">Progressive disclosure</h2>
+      <p>The visible paragraph carries the material claim. Supporting implementation can be expanded without losing context.</p>
+      <details>
+        <summary>Inspect supporting implementation details</summary>
+        <p>This content is secondary to the report’s main reasoning path and expands automatically in print.</p>
+        <pre><code>&lt;details&gt;
+  &lt;summary&gt;Inspect supporting details&lt;/summary&gt;
+&lt;/details&gt;</code></pre>
+      </details>
+      <details open>
+        <summary>Initially expanded disclosure</summary>
+        <p>This specimen demonstrates the open state.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="report-footer">Report design system · component catalog</footer>
+  <script>
+    const root = document.documentElement;
+    const themeButton = document.querySelector('.theme-toggle');
+    const themes = ['auto', 'dark', 'light'];
+    const getSavedTheme = () => {
+      try {
+        const savedTheme = localStorage.getItem('report-theme');
+        return themes.includes(savedTheme) ? savedTheme : 'auto';
+      } catch {
+        return 'auto';
+      }
+    };
+    const saveTheme = (theme) => {
+      try { localStorage.setItem('report-theme', theme); } catch {}
+    };
+    const applyTheme = (theme, persist = true) => {
+      if (theme === 'auto') root.removeAttribute('data-theme');
+      else root.dataset.theme = theme;
+      themeButton.textContent = `Theme: ${theme}`;
+      themeButton.setAttribute('aria-label', `Color theme: ${theme}. Activate to change theme.`);
+      if (persist) saveTheme(theme);
+    };
+    applyTheme(getSavedTheme(), false);
+    themeButton.addEventListener('click', () => {
+      const current = root.dataset.theme || 'auto';
+      applyTheme(themes[(themes.indexOf(current) + 1) % themes.length]);
+    });
+  </script>
+</body>
+</html>
