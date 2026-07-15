@@ -1,6 +1,7 @@
 ---
 name: changeset
-description: Analyze git changes and create or edit Changesets entries in the user's preferred style. Use when preparing a PR, branch is ready for review, user mentions changeset, changelog, release notes, version bump, patch/minor/major, or asks whether a changeset is needed. Inspect committed branch changes, choose semver from user-visible impact and Conventional Commits, create via the repo's Changesets CLI when possible, and write concise user-facing changelog prose: patch one-liners, minor summary plus example, major impact plus migration.
+description: |
+  Analyze git changes and create or edit Changesets entries in the user's preferred style. Use when preparing a PR, branch is ready for review, user mentions changeset, changelog, release notes, version bump, patch/minor/major, or asks whether a changeset is needed. Inspect committed branch changes, choose semver from user-visible impact and Conventional Commits, create via the repo's Changesets CLI when possible, and write concise user-facing changelog prose: patch one-liners, minor summary plus example, major impact plus migration.
 ---
 
 # Changeset

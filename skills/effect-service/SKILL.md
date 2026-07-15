@@ -1,6 +1,7 @@
 ---
 name: effect-service
-description: Build and review Effect v4 services in TypeScript. Use whenever creating, refactoring, or reviewing services, Context.Service tags, Layer constructors, Default layers, service mocks, dependency injection, leaking requirements, or Effect v3-to-v4 service migrations. Prefer this skill for any codebase using Effect v4 or effect-smol service/layer patterns.
+description: |
+  Build and review Effect v4 services in TypeScript. Use whenever creating, refactoring, or reviewing services, Context.Service tags, Layer constructors, Default layers, service mocks, dependency injection, leaking requirements, or Effect v3-to-v4 service migrations. Prefer this skill for any codebase using Effect v4 or effect-smol service/layer patterns.
 ---
 
 # Effect v4 Service Authoring

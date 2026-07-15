@@ -1,6 +1,7 @@
 ---
 name: comment-auditor
-description: Audit and improve code comments, inline notes, TODO/FIXME/HACK/NOTE codetags, doc comments, and generated-template comments as durable context for humans and AI coding agents. Use when reviewing comments, adding TODOs, cleaning up comment quality, checking context engineering in code, or after code changes that may have left stale, redundant, misleading, vague, or unowned comments.
+description: |
+  Audit and improve code comments, inline notes, TODO/FIXME/HACK/NOTE codetags, doc comments, and generated-template comments as durable context for humans and AI coding agents. Use when reviewing comments, adding TODOs, cleaning up comment quality, checking context engineering in code, or after code changes that may have left stale, redundant, misleading, vague, or unowned comments.
 version: "0.1.0"
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: report-builder
-description: Build, redesign, or evaluate a self-contained technical HTML report using the shared report design system and scaffold. Use whenever an agent or skill needs to present findings, teach a concept, explain a change, compare options, record a decision, conduct an audit, or publish technical reference material as a polished HTML artifact. Also use when an existing HTML report needs clearer information architecture, stronger evidence, consistent styling, accessibility, responsive behavior, print support, or alignment with the shared design language.
+description: |
+  Build, redesign, or evaluate a self-contained technical HTML report using the shared report design system and scaffold. Use whenever an agent or skill needs to present findings, teach a concept, explain a change, compare options, record a decision, conduct an audit, or publish technical reference material as a polished HTML artifact. Also use when an existing HTML report needs clearer information architecture, stronger evidence, consistent styling, accessibility, responsive behavior, print support, or alignment with the shared design language.
 ---
 
 # Report Builder
