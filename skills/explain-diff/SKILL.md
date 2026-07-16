@@ -2,6 +2,9 @@
 name: explain-diff
 description: |
   Create a rich single-file HTML explanation of a code change, diff, branch, commit range, or PR, using inline SVG or hand-built diagrams when useful. Use whenever the user asks to explain a diff, PR, branch, commit, reviewable change, or "what changed" and wants an artifact, walkthrough, teaching doc, onboarding explanation, interactive quiz, diagrams, or HTML output. This skill should trigger even if the user says "explain this PR" without explicitly saying HTML when a rich shareable explanation would help.
+metadata:
+  source: https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524
+  attribution: Adapted from Geoffrey Litt's explain-diff skill; see the repository NOTICE.md.
 ---
 
 # Explain Diff

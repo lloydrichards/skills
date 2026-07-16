@@ -1,5 +1,15 @@
 # Third-Party Notices
 
+## Explain Diff Skill
+
+`skills/explain-diff` is adapted from Geoffrey Litt's `/explain-diff` skill, which he presented in his talk “Understanding is the new bottleneck” at AI Engineer World’s Fair 2026.
+
+Original skill: <https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524>
+
+Talk write-up: <https://www.geoffreylitt.com/2026/07/02/understanding-is-the-new-bottleneck.html>
+
+The version in this repository retains the original skill's central teaching sequence (background, intuition, code walkthrough, and quiz), concrete toy examples, diagram guidance, dated standalone HTML output, and prose-style direction. It has been substantially expanded and modified with reader contracts, system-level diff investigation, explicit mental-model construction, worked examples and transfer prompts, evidence and inference rules, behavior/risk/test coverage, stronger quiz design, accessibility and offline-output requirements, Mermaid pre-rendering, validation checks, and integration with the shared report-builder scaffold and design system.
+
 ## Effect Skill
 
 `skills/effect` began as the Effect skill from [kitlangton/skills](https://github.com/kitlangton/skills) and has been modified and expanded in this repository.
