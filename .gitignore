@@ -14,5 +14,7 @@
 !skills/effect/**
 !skills/explain-diff/
 !skills/explain-diff/**
+!skills/learn/
+!skills/learn/**
 !skills/report-builder/
 !skills/report-builder/**

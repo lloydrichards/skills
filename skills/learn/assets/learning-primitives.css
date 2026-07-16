@@ -1,0 +1,100 @@
+/* Learning-specific extensions for the shared report-builder design system. */
+
+[data-learn-prediction],
+[data-learn-worked-transfer] {
+  margin-block-start: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  background: var(--panel-surface);
+}
+
+[data-learn-prediction] form,
+[data-learn-worked-transfer] form,
+[data-learn-worked-transfer] [data-stage] {
+  margin-block-start: var(--space-3);
+}
+
+[data-learn-prediction] [data-role="outcome"],
+[data-learn-worked-transfer] [data-role="hint"] {
+  margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border-inline-start: 3px solid var(--state-info);
+  background: var(--surface-info);
+}
+
+[data-learn-prediction] [data-role="feedback"],
+[data-learn-worked-transfer] [data-role="feedback"] {
+  display: block;
+  min-block-size: 1.6em;
+  margin-block-start: var(--space-3);
+  color: var(--text-secondary);
+}
+
+[data-learn-prediction] [data-action],
+[data-learn-worked-transfer] [data-action] {
+  margin-block-start: var(--space-2);
+  margin-inline-end: var(--space-1);
+}
+
+.learning-error {
+  margin-block-start: var(--space-1);
+  color: var(--state-danger);
+  font-weight: 650;
+}
+
+.learning-evidence-fallback {
+  margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  background: var(--surface-note);
+}
+
+.learning-evidence-disclosure {
+  margin-block-start: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-body-2);
+}
+
+.learning-evidence-fallback textarea {
+  inline-size: 100%;
+  margin-block-start: var(--space-1);
+  font-family: var(--font-technical);
+  font-size: var(--text-body-2);
+}
+
+[data-learn-worked-transfer] [data-stage] {
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--border-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-learn-prediction] *,
+  [data-learn-worked-transfer] * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  [data-learn-prediction] [data-role="outcome"],
+  [data-learn-worked-transfer] [data-role="hint"] {
+    border-inline-start-color: CanvasText;
+  }
+}
+
+@media print {
+  [data-action="copy-evidence"],
+  [data-action="reset"],
+  [data-action="hint"] {
+    display: none;
+  }
+
+  [data-learn-prediction] [hidden],
+  [data-learn-worked-transfer] [hidden] {
+    display: block;
+  }
+}

@@ -1,5 +1,13 @@
 # Third-Party Notices
 
+## Learn Skill
+
+`skills/learn` is a clean-break redesign of Matt Pocock's stateful `teach` skill.
+
+Original skill: <https://github.com/mattpocock/skills/tree/main/skills/productivity/teach>
+
+The redesign retains the original ideas of one mission-driven teaching workspace, trusted resources, durable learning records, short lessons, references, retrieval practice, spacing, interleaving, feedback, and reusable assets. It replaces the original workspace and lesson contract with explicit capability evidence, routed learning jobs, risk-based research, learner-controlled local evidence handoff, report-builder integration, and two reusable progressive-enhancement primitives.
+
 ## Explain Diff Skill
 
 `skills/explain-diff` is adapted from Geoffrey Litt's `/explain-diff` skill, which he presented in his talk “Understanding is the new bottleneck” at AI Engineer World’s Fair 2026.
