@@ -26,7 +26,7 @@ Check these before guessing:
 Read only the branch references that match the task.
 
 - Data models, schemas, brands, variants, optional keys, or decoders: read `references/SCHEMA.md`.
-- Services, module surfaces, layers, runtime wiring, errors, `Effect.fn`, or test services: read `references/SERVICES_LAYERS.md`.
+- Services, service contracts, layers, runtime wiring, requirement leaks, `Effect.fn`, or service review: read `references/SERVICES_LAYERS.md`.
 - Runtime config, env variables, `ConfigProvider`, or `layerConfig`: read `references/CONFIG.md`.
 - Retry, repeat, polling, backoff, jitter, rate-limit-aware policies, or pass loops: read `references/SCHEDULING.md`.
 - Memoization, per-key TTL caches, deduplicating concurrent lookups, or request batching: read `references/CACHING.md`.
@@ -47,10 +47,10 @@ If a task spans several branches, read all matching files before editing.
 - Compose workflows with `Effect.gen(function* () { ... })`.
 - Define public service methods and non-trivial internal service methods with `Effect.fn("Domain.operation")`.
 - Use `Effect.fnUntraced` only for internal helpers where stack-frame/span metadata is intentionally unnecessary.
-- Prefer `Context.Service` for application services when the codebase has not standardized on another current service-tag style.
-- Build real service implementations with `Layer.effect(Service, Effect.gen(...))` and return `Service.of({ ... })`.
+- Prefer a domain-named `Context.Service` class with a separate shape interface when the codebase has not standardized on another current service-tag style.
+- Put `make` and production layers on the service class. Acquire dependencies in `make`, define methods there, and return an object that `satisfies` the service shape.
 - Model records with `Schema.Struct(...)` plus a same-name `interface`.
-- Model typed Effect errors with `Schema.TaggedErrorClass`.
+- Model runtime-internal typed errors with `Data.TaggedError`; use `Schema.TaggedErrorClass` when errors are serialized, boundary-crossing, or user-facing.
 - Read runtime config through `Config`, not direct `process.env` access in application logic.
 - Use `Schedule` for retry, repeat, polling, pacing, and backoff policies.
 - Use `Stream` for effectful sources that emit many values over time and need pull, backpressure, interruption, or transformation.
@@ -70,9 +70,9 @@ If a task spans several branches, read all matching files before editing.
 - Reusable boundary-crossing tagged variant: `Schema.TaggedStruct(...)` plus same-name `interface`.
 - Boundary-crossing tagged union: `Schema.TaggedUnion(...)` with `.cases`, `.guards`, and `.match`.
 - External/custom discriminator such as `type`: `Schema.Struct({ type: Schema.tag("variant"), ... })` plus `Schema.toTaggedUnion("type")` when union helpers are needed.
-- Expected typed failure: `Schema.TaggedErrorClass`.
+- Runtime-internal typed failure: `Data.TaggedError`; serialized or user-facing typed failure: `Schema.TaggedErrorClass`.
 - Unknown boundary payload: `Schema.decodeUnknownEffect(...)`.
-- Service boundary: `Context.Service<Service, Interface>()(...)` plus `Layer.effect(...)` plus `Service.of(...)`.
+- Service boundary: domain-named `Context.Service<UserStore, UserStoreShape>()(...)` with static `make`; use `Live` for intentional open requirements and `Default` only when fully wired.
 - Public or non-trivial internal service method: `Effect.fn("Domain.operation")`.
 - Runtime configuration: `Config` recipes read in layers; override with `ConfigProvider` in tests.
 - Event source: `Stream` consumed with `Stream.runForEach(...)` and forked with `Effect.forkScoped` in the owning layer.
@@ -107,5 +107,6 @@ If a task spans several branches, read all matching files before editing.
 - Do not use cause-level recovery when typed-error recovery is enough.
 - Do not use `Layer.mergeAll(...)` or `provideMerge(...)` as blind make-it-compile tools.
 - Do not hide required application authority, credentials, persistence, transports, or external services behind `Context.Reference` defaults.
+- Do not call a layer `Default` when it still has input requirements.
 - Do not add arbitrary `Effect.sleep(...)` to tests when a deterministic synchronization primitive is available.
 - Do not hand-roll Map/TTL/prune caches or in-flight dedupe when `effect/Cache` fits.

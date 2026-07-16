@@ -1,168 +1,134 @@
-# Services, Layers, And Modules
+# Services And Layers
 
-Use this when defining service tags, module surfaces, layer implementations, runtime wiring, typed errors, or `Effect.fn` operation boundaries.
+Use this when defining service contracts, `Context.Service` classes, implementations, layers, runtime wiring, or service review boundaries.
 
-## Module Surface
+## Canonical Service Shape
 
-One opinionated application-module style uses file-local role names and one canonical ES module namespace projection. Follow the existing codebase's module style when it has one; this convention is not required by Effect.
+Declare the public shape first, then use a domain-named `Context.Service` class as the service identity. Keep construction and production layers on the class so callers can discover them together.
 
 ```ts
-export interface Interface {
-  readonly get: (id: UserId) => Effect.Effect<User, NotFound | PersistenceError>
+export interface UserStoreShape {
+  readonly findById: (
+    id: UserId,
+  ) => Effect.Effect<User, UserNotFound | UserStoreUnavailable>
+  readonly save: (
+    user: User,
+  ) => Effect.Effect<void, DuplicateEmail | UserStoreUnavailable>
 }
 
-export class Service extends Context.Service<Service, Interface>()(
-  "@app/UserRepo",
-) {}
+export class UserStore extends Context.Service<UserStore, UserStoreShape>()(
+  "app/UserStore",
+) {
+  static readonly make = Effect.gen(function* () {
+    const database = yield* Database
 
-export const layer = Layer.effect(
-  Service,
-  Effect.gen(function* () {
-    const sql = yield* SqlClient.SqlClient
-
-    const get = Effect.fn("UserRepo.get")(function* (id: UserId) {
-      // ...
+    const findById = Effect.fn("UserStore.findById")(function* (id: UserId) {
+      // Translate database failures at this service boundary.
+      // Return UserNotFound when the requested identity does not exist.
+      return yield* Effect.die("implementation omitted")
     })
 
-    return Service.of({ get })
-  }),
-)
+    const save = Effect.fn("UserStore.save")(function* (user: User) {
+      return yield* Effect.die("implementation omitted")
+    })
 
-export class NotFound extends Schema.TaggedErrorClass<NotFound>()(
-  "UserRepo.NotFound",
-  { id: UserId },
-) {}
+    return {
+      findById,
+      save,
+    } satisfies UserStoreShape
+  })
 
-export * as UserRepo from "./user-repo.js"
-```
+  static readonly Live = Layer.effect(this, this.make).pipe(
+    Layer.satisfiesServicesType<Database>(),
+  )
 
-Consumers use the module namespace.
-
-```ts
-import { UserRepo } from "./user-repo.js"
-
-const program = Effect.gen(function* () {
-  const repo = yield* UserRepo.Service
-  return yield* repo.get(id)
-})
-```
-
-The self-export is deliberate. It lets the file remain the module while giving every consumer the same domain-first name, without a TypeScript `namespace`, wrapper object, or repeated consumer-side aliases.
-
-```ts
-// Sibling module: import the owning leaf directly.
-import { UserRepo } from "./user-repo.js"
-
-// Folder or package barrel: relay the identity established by the leaf.
-export { UserRepo } from "./user-repo.js"
+  static readonly Default = this.Live.pipe(
+    Layer.provide(Database.Default),
+    Layer.satisfiesServicesType<never>(),
+  )
+}
 ```
 
 Guidance:
 
-- Do not name the tag class `UserRepo` inside `user-repo.ts`; the module namespace is the domain name.
-- In this module style, single-file modules self-export their canonical namespace at the bottom: `export * as UserRepo from "./user-repo.js"`.
-- Sibling modules import that namespace from the owning leaf; they do not import through their own aggregate barrel.
-- Folder and package barrels relay established leaf identities with `export { UserRepo } from "./user-repo.js"`.
-- The resulting `UserRepo.UserRepo === UserRepo` self-reference is unusual. Use this pattern only where the runtime and toolchain support it; otherwise use named exports or a separate barrel.
-- Export only intentional surface; keep local schemas, row codecs, helpers, and implementation details unexported.
-- Do not introduce TypeScript `namespace` declarations for organization.
-- Use a named service class such as `class UserRepo extends Context.Service...` when an external library or existing codebase does not use module namespace style.
+- Name the shape after the domain service, such as `UserStoreShape`; do not use generic `Interface` / `Service` names by default.
+- Define public and non-trivial effectful methods with `Effect.fn("Service.operation")`.
+- Acquire dependencies once in `make`, then define methods there so they close over the acquired implementations.
+- Return the implementation with `satisfies ServiceShape` so contract drift is caught next to construction.
+- Keep the service class focused on identity, construction, and production layers. Keep unrelated helpers and test implementations elsewhere.
+- Follow an established project-local module convention when it differs. Do not introduce barrels, TypeScript namespaces, or self-reexported module namespaces as a general Effect convention.
 
-## Layer Constructors
+## Requirements: Intentional Versus Leaked
 
-Choose the layer constructor that matches the thing produced.
+Public service methods should normally have `R = never`. A database, logger, HTTP client, filesystem, or other implementation dependency leaking from a method forces callers to know how the service is built.
 
-```ts
-Layer.succeed(Service, impl)       // already-built service
-Layer.sync(Service, () => impl)    // lazy synchronous service
-Layer.effect(Service, makeEffect)  // effectful service acquisition
-```
+Yield implementation dependencies in `make` and close over their concrete values. Also inspect helpers called by public methods: a helper that yields `Database` still leaks `Database` through its caller.
 
-Guidance:
+Non-`never` requirements are valid when the requirement is an intentional part of the public capability. Examples include an explicitly scoped operation or a platform/runtime capability deliberately supplied at the application edge. Make that requirement visible in the shape and explain why callers own it.
 
-- Default real implementations to `Layer.effect(Service, Effect.gen(...))`.
-- Use `Layer.effectContext(...)` when one acquisition intentionally supplies multiple services, especially first-class test stubs or one client backing several service tags.
-- Use `Layer.unwrap(...)` when config or runtime discovery chooses/builds the layer.
-- Use `Layer.fresh(...)` or `Effect.provide(layer, { local: true })` only when a test or operation needs isolated acquisition.
-- Use `Context.Reference` rarely, only for ambient/defaultable runtime references where a safe default is real.
+## Layer Naming And Wiring
 
-## Long-Lived Work
-
-A layer that starts a stream, listener, worker, subscription, or forever loop must fork that work into the layer scope. Layer acquisition must complete.
+Choose the constructor that matches acquisition:
 
 ```ts
-export const layer = Layer.effectDiscard(
-  Effect.gen(function* () {
-    const events = yield* Events.Service
-
-    yield* events.stream.pipe(
-      Stream.runForEach(handleEvent),
-      Effect.forkScoped,
-    )
-  }),
-)
+Layer.succeed(Service, implementation) // already built
+Layer.sync(Service, () => implementation) // lazy and synchronous
+Layer.effect(Service, make) // effectful acquisition
 ```
 
-Guidance:
+- `make` may require implementation services.
+- `Default` means a fully wired production layer with `RequirementsIn = never`. Enforce this with `Layer.satisfiesServicesType<never>()`.
+- Use `Live`, `WithoutDependencies`, or another explicit name when application-level composition intentionally supplies requirements.
+- Do not invent credentials, database choices, endpoints, or other deployment authority merely to manufacture a `Default` layer.
+- If both open and fully wired forms are useful, derive `Default` from `Live` and provide the dependency layers there.
+- Prefer composing named layers once near the application boundary.
+- Use `Layer.provide(...)` to hide an implementation dependency and `Layer.provideMerge(...)` only when downstream consumers intentionally need it too.
+- Use `Layer.mergeAll(...)` for independent exposed layers, not to silence missing-requirement errors.
+- Use `Layer.effectContext(...)` when one acquisition intentionally supplies several service tags, especially a first-class test stub or one client backing several capabilities.
+- Use `Layer.unwrap(...)` when configuration or runtime discovery selects the layer.
+- Reuse named layer values when resources should share layer memoization. Use `Layer.fresh(...)` or local provision only when isolated acquisition is intentional.
+- Use `Context.Reference` only for ambient runtime references with a genuinely safe default, not application authority or infrastructure.
 
-- Use `Effect.forkScoped`, `FiberSet`, or `FiberMap` for scoped background work.
-- Do not run forever work inline during layer acquisition.
-- Do not expose public `start` methods unless the domain explicitly needs manual lifecycle control.
+## Service Contracts
 
-## Runtime Wiring
+- Expose domain capabilities, not implementation tools such as `query`, `getClient`, or a dependency's raw API.
+- Map persistence, transport, parsing, and SDK errors into service/domain failures. See `ERROR_HANDLING.md` for recoverable errors, internal versus serializable error classes, and reason unions.
+- A known-identity lookup that cannot fulfill its contract should fail with a typed `NotFound` error rather than return `Option`, `null`, or `undefined`.
+- `Option` remains appropriate when absence is valid domain data, such as an optional override, cached value, or argument.
+- Model repeatable operations as methods, including zero-argument methods. Reserve service properties for stable acquired values.
+- Keep implementation helpers private. Move meaningful pure domain logic to a domain module instead of exporting service internals.
+- Read dependency shapes from the repository before implementing against them; do not invent plausible-looking nested APIs.
 
-- Use `Layer.provide(...)` to hide an implementation dependency.
-- Use `Layer.provideMerge(...)` only when the dependency should remain exposed for downstream consumers.
-- Use `Layer.mergeAll(...)` for independent exposed layers.
-- Prefer flat, topologically sorted runtime layer values with named subgraphs.
-- Avoid using `provideMerge` as a blind make-it-compile tool.
-- Avoid hiding important authority or lifecycle dependencies behind broad invisible provisioning.
+## Errors At The Service Boundary
 
-## Effect.fn
+Typed failures should represent recovery or application decisions. Prefer precise errors such as `UserNotFound`, `DuplicateEmail`, or `PermissionDenied` when callers handle them differently.
 
-Use extra `Effect.fn(...)` arguments for wrappers that apply to the whole function call. Each transform receives `(effect, ...originalArgs)`.
+Collapse implementation failures only when callers genuinely apply the same policy, for example `UserStoreUnavailable { operation, cause }`. Preserve the cause for diagnostics without exposing `SqlError`, vendor SDK errors, or parser internals in the public shape. Do not turn defects or interruption into ordinary service failures.
 
-```ts
-const readAttachment = Effect.fn("Attachment.read")(
-  function* (ref: AttachmentRef) {
-    return yield* api.read(ref)
-  },
-  (effect, ref) =>
-    effect.pipe(
-      attachmentError("Attachment.read", { attachmentId: ref.id }),
-    ),
-)
-```
+See `ERROR_HANDLING.md` for error representation and `SCHEMA.md` for serializable error schemas.
 
-Good whole-function transforms:
+When an `Effect.fn(...)` wrapper applies to the whole invocation and needs the original arguments, pass a small transform after the generator. Good uses include error classification, tracing, retry, timeout, cleanup, and result mapping. Keep branch-local handling in the generator and avoid long transform pipelines.
 
-- error classification
-- localized recovery
-- logging annotations
-- spans
-- retry
-- timeout
-- ensuring cleanup
-- small local provisioning
-- result mapping
+## Test And Alternate Implementations
 
-Guidance:
+Keep mocks, fixtures, stateful fakes, and test control services outside the production service class, normally in a test-support module. A no-op implementation used in production is an alternate adapter and should also be exported separately rather than bundled into the service class.
 
-- Keep the generator body focused on the core workflow.
-- Use transforms when the wrapper needs original arguments.
-- Do not build long clever pipelines; one or two transforms is usually enough.
-- Do not use this for local branch-level handling inside the workflow.
+See `TESTING.md` for `Layer.mock`, reusable test services, and shared test layers.
 
-## Operation Error Helpers
+## Resources And Long-Lived Work
 
-For boundary errors with operation labels, prefer a shared curried `mapError` helper over hand-writing wrappers in every module.
+Acquire clients, connections, and other owned resources during layer construction and tie their cleanup to the layer scope. Fork listeners, subscriptions, streams, and forever loops into that scope so layer acquisition can complete.
 
-```ts
-const persistenceError = operationError(PersistenceError.make)
+See `RESOURCES_SCOPES.md` for acquisition/finalization and `STREAMS.md` for long-lived consumers, queues, pubsubs, and interruption.
 
-const row = yield* query.pipe(
-  persistenceError("UserRepository.findById"),
-)
-```
+## Review Checklist
 
-Name the local helper after the error it produces, such as `persistenceError`, `projectionError`, or `processingError`. Use `Effect.fn(...)` and spans for observability in addition to payload labels, not instead of them.
+- The class is domain-named and its self type matches.
+- The returned implementation satisfies the declared shape.
+- Implementation dependencies are acquired in `make` and do not leak from methods.
+- Every public method requirement is either `never` or explicitly intentional.
+- `Default` is fully wired; partial layers have names that advertise open requirements.
+- Public errors describe caller decisions rather than implementation libraries.
+- Required lookup failures are not hidden in the success channel.
+- Effect values are yielded, returned, or composed; none float unused.
+- Mocks and implementation helpers do not widen the production surface.

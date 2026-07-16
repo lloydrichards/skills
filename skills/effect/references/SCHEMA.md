@@ -109,7 +109,7 @@ Guidance:
 
 ## Errors
 
-`Schema.TaggedErrorClass` is the explicit class exception for typed Effect errors.
+`Schema.TaggedErrorClass` is the schema-aware class choice for typed Effect errors that are serialized, cross a boundary, or are user-facing. Prefer `Data.TaggedError` for failures that remain internal to one runtime and do not need schema integration.
 
 ```ts
 export class PersistenceError extends Schema.TaggedErrorClass<PersistenceError>()(
@@ -126,5 +126,6 @@ Guidance:
 - Map infrastructure failures into domain-specific tagged errors at service boundaries.
 - Include operation labels when they help diagnose adapter, persistence, provider, or transport failures.
 - Use schema unions for public API or transport error surfaces.
+- A cohesive outer error may carry a `reason` modeled with `Schema.Literals(...)` when reasons have no payload, or a tagged union when variants carry different fields. Do not create one oversized application-wide error.
 - Use `Schema.Defect()` for defect-like payloads.
 - Preserve interruption when catching broad causes at ingress, worker, or stream boundaries.

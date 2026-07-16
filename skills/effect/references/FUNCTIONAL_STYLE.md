@@ -44,6 +44,10 @@ const parseCsvLine = (input: string) =>
 
 ## Optional Values
 
+Use `Option` when absence is intentional data, especially for optional configuration, overrides, arguments, cached state, or collection access. Prefer it to ambiguous `null` / `undefined` in internal application contracts.
+
+Do not use `Option` to avoid modeling a failed required operation. A lookup for a required known identity should fail with a typed `NotFound` error when absence means the operation could not fulfill its contract.
+
 Potentially missing array and record access should remain explicit as `Option`. Use `Option` when absence flows through multiple operations or has domain meaning. A simple `value ?? fallback` remains best for an isolated default.
 
 ```ts

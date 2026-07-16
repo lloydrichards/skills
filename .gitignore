@@ -12,8 +12,6 @@
 !skills/comment-auditor/**
 !skills/effect/
 !skills/effect/**
-!skills/effect-service/
-!skills/effect-service/**
 !skills/explain-diff/
 !skills/explain-diff/**
 !skills/report-builder/

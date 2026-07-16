@@ -18,13 +18,14 @@ Import test tools from `@effect/vitest`, which re-exports both Vitest `assert` a
 
 ```ts
 import { assert, describe, it } from "@effect/vitest"
-import { Effect, Option } from "effect"
+import { Effect } from "effect"
 
-describe("UserRepo", () => {
-  it.effect("finds a user", () =>
+describe("UserStore", () => {
+  it.effect("loads a user", () =>
     Effect.gen(function* () {
-      const result = yield* UserRepo.find(UserId.make("u1"))
-      assert.isTrue(Option.isSome(result))
+      const users = yield* UserStore
+      const result = yield* users.findById(UserId.make("u1"))
+      assert.strictEqual(result.id, UserId.make("u1"))
     }),
   )
 })
@@ -43,12 +44,12 @@ describe("UserRepo", () => {
 - Follow an established project convention when one exists; do not mix styles in one test without a feature-specific reason.
 
 ```ts
-it.effect("finds a user", () =>
+it.effect("loads a user", () =>
   Effect.gen(function* () {
-    const users = yield* UserRepo.Service
-    const result = yield* users.find(UserId.make("u1"))
-    assert.isTrue(Option.isSome(result))
-  }).pipe(Effect.provide(UserRepo.testLayer)),
+    const users = yield* UserStore
+    const result = yield* users.findById(UserId.make("u1"))
+    assert.strictEqual(result.id, UserId.make("u1"))
+  }).pipe(Effect.provide(userStoreTestLayer)),
 )
 ```
 
@@ -85,32 +86,32 @@ it.effect("publishes exactly once", () =>
 
 ## First-Class App Test Stubs
 
-Use `TestInterface extends Interface`, `TestService`, and `testLayer` for reusable/stateful fakes.
+Keep mocks, fixtures, stateful fakes, and test-control services outside the production service class, normally in a test-support module. Use a test-control service and layer for reusable/stateful fakes.
 
 ```ts
-export interface Interface {
+export interface NotifierShape {
   readonly send: (message: Message) => Effect.Effect<void, SendError>
 }
 
-export class Service extends Context.Service<Service, Interface>()(
+export class Notifier extends Context.Service<Notifier, NotifierShape>()(
   "@app/Notifier",
 ) {}
 
-export interface TestInterface extends Interface {
+export interface NotifierTestShape extends NotifierShape {
   readonly sentMessages: () => Effect.Effect<ReadonlyArray<Message>>
   readonly failNextSend: (error: SendError) => Effect.Effect<void>
 }
 
-export class TestService extends Context.Service<TestService, TestInterface>()(
+export class NotifierTest extends Context.Service<NotifierTest, NotifierTestShape>()(
   "@app/Notifier/Test",
 ) {}
 
-export const testLayer = Layer.effectContext(
+export const notifierTestLayer = Layer.effectContext(
   Effect.gen(function* () {
     const sent = yield* Ref.make<ReadonlyArray<Message>>([])
     const nextFailure = yield* Ref.make<Option.Option<SendError>>(Option.none())
 
-    const service = TestService.of({
+    const service = NotifierTest.of({
       send: Effect.fn("Notifier.Test.send")(function* (message) {
         const failure = yield* Ref.getAndSet(nextFailure, Option.none())
         if (Option.isSome(failure)) return yield* Effect.fail(failure.value)
@@ -125,8 +126,8 @@ export const testLayer = Layer.effectContext(
     })
 
     return Context.empty().pipe(
-      Context.add(Service, service),
-      Context.add(TestService, service),
+      Context.add(Notifier, service),
+      Context.add(NotifierTest, service),
     )
   }),
 )
@@ -134,18 +135,20 @@ export const testLayer = Layer.effectContext(
 
 Guidance:
 
-- The same object should back both the real `Service` tag and `TestService` tag.
+- The same object should back both the production service tag and the test-control tag.
 - Production code depends only on the real service tag.
-- Tests use `TestService` for control and inspection.
+- Tests use the test-control service for control and inspection.
 - Use function-valued service members, including zero-argument operations, so `Effect.fn` fits naturally.
 - Use `Layer.succeed` for complete dead-simple static test implementations.
 - Use `Layer.mock` only for tiny local partial mocks where omitted members should fail loudly if used.
+- A mock replaces the service boundary; it should not depend on the production service's `Default` layer.
+- A no-op used by production is an alternate adapter, not a test mock. Export it separately from the production service class.
 
 ## Config In Tests
 
 Use `ConfigProvider.layer(ConfigProvider.fromUnknown(...))` when the test should exercise Config decoding.
 
-Use `Layer.succeed(AppConfiguration.Service, config)` when the app wraps decoded config in its own service and the test does not need to exercise env decoding.
+Use `Layer.succeed(AppConfiguration, config)` when the app wraps decoded config in its own service and the test does not need to exercise env decoding.
 
 ## Shared Test Layers
 
@@ -153,14 +156,14 @@ Use `layer(...)` when a describe block needs one shared layer context. It builds
 
 ```ts
 import { assert, layer } from "@effect/vitest"
-import { Effect, Option } from "effect"
+import { Effect } from "effect"
 
-layer(UserRepo.testLayer)("UserRepo", (it) => {
-  it.effect("finds the seeded user", () =>
+layer(userStoreTestLayer)("UserStore", (it) => {
+  it.effect("loads the seeded user", () =>
     Effect.gen(function* () {
-      const repo = yield* UserRepo.Service
-      const user = yield* repo.find(UserId.make("u1"))
-      assert.isTrue(Option.isSome(user))
+      const store = yield* UserStore
+      const user = yield* store.findById(UserId.make("u1"))
+      assert.strictEqual(user.id, UserId.make("u1"))
     }),
   )
 })

@@ -56,7 +56,7 @@ Acquire long-lived clients, connections, listeners, and subscriptions during lay
 
 ```ts
 export const layer = Layer.effect(
-  Client.Service,
+  Client,
   Effect.gen(function* () {
     const client = yield* Effect.acquireRelease(
       makeClient,
@@ -67,7 +67,7 @@ export const layer = Layer.effect(
           ),
         ),
     )
-    return Client.Service.of({ request: client.request })
+    return Client.of({ request: client.request })
   }),
 )
 ```

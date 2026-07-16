@@ -60,7 +60,7 @@ Own long-lived stream consumers in layers and fork them into the layer scope.
 ```ts
 export const layer = Layer.effectDiscard(
   Effect.gen(function* () {
-    const gateway = yield* Gateway.Service
+    const gateway = yield* Gateway
 
     yield* gateway.events.pipe(
       Stream.filter(isMessageEvent),
@@ -89,7 +89,7 @@ Guidance:
 Good service shape:
 
 ```ts
-export interface Interface {
+export interface ProviderEventsShape {
   readonly events: Stream.Stream<ProviderEvent, ProviderError>
   readonly status: Stream.Stream<ProviderStatus>
 }
