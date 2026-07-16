@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explain Diff"
+  short_description: "Build a rich explanation of a code change"
+  default_prompt: "Use $explain-diff to explain this branch and its design."

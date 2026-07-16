@@ -1,0 +1,4 @@
+interface:
+  display_name: "Effect"
+  short_description: "Build production TypeScript with Effect v4"
+  default_prompt: "Use $effect to implement this workflow with Effect v4."

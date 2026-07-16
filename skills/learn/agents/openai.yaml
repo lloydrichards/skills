@@ -1,0 +1,7 @@
+interface:
+  display_name: "Learn"
+  short_description: "Run a stateful capability-learning mission"
+  default_prompt: "Use $learn to start a learning mission for this capability."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Comment Auditor"
+  short_description: "Audit code comments for durable context"
+  default_prompt: "Use $comment-auditor to audit and improve the comments in these changes."
