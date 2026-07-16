@@ -1,7 +1,7 @@
 ---
 name: explain-diff
 description: |
-  Create a rich single-file HTML explanation of a code change, diff, branch, commit range, or PR, using inline SVG or hand-built diagrams when useful. Use whenever the user asks to explain a diff, PR, branch, commit, reviewable change, or "what changed" and wants an artifact, walkthrough, teaching doc, onboarding explanation, interactive quiz, diagrams, or HTML output. This skill should trigger even if the user says "explain this PR" without explicitly saying HTML when a rich shareable explanation would help.
+  Create a rich single-file HTML explanation of a code change, diff, branch, commit range, or PR. Use whenever the user asks to explain a diff, PR, branch, commit, reviewable change, or "what changed" and a durable teaching artifact, walkthrough, onboarding explanation, diagrams, or knowledge check would help. The goal is not to summarize files but to build and verify an accurate mental model of the change.
 metadata:
   source: https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524
   attribution: Adapted from Geoffrey Litt's explain-diff skill; see the repository NOTICE.md.
@@ -9,232 +9,140 @@ metadata:
 
 # Explain Diff
 
-Create a single HTML page that teaches a code change clearly enough for a reader who was not present when it was written. The page should feel like a careful technical essay with interactive aids, not a decorated diff dump.
+Create a self-contained HTML explainer that helps its reader become an active participant in the codebase. The artifact should teach what changed, how it works, and what follows from it—not merely make a diff easier to skim.
 
-Use this skill when explaining a code change, diff, branch, commit range, or PR. The output is an HTML file saved outside the repository with a date-prefixed filename.
+The teaching sequence is the heart of this skill:
 
-For explain-diff composition and its relationship to the shared report-builder scaffold and design system, see [HTML-REPORT.md](HTML-REPORT.md). Use it whenever generating the artifact.
+**relevant prior system → intuitive model of the change → worked example → implementation mechanism → consequences and limits → retrieval practice**
 
-## Core Outcome
+Read [HTML-REPORT.md](HTML-REPORT.md) before generating the artifact. It is the canonical specification for page composition, report-builder integration, markup, visuals, and validation. This file owns the pedagogy and investigation workflow; `HTML-REPORT.md` owns its presentation.
 
-Produce one `.html` file containing:
+## Reader Contract
 
-- Embedded CSS and JavaScript for the page itself.
-- Mermaid diagrams when graph-shaped relationships, flows, or sequences are clearer than hand-built HTML.
-- A long-page layout with a table of contents and section anchors.
-- Background, intuition, code walkthrough, risks/testing, and quiz sections.
-- Mermaid or hand-built HTML/CSS/SVG diagrams, callouts, code excerpts, and interactive multiple-choice quiz behavior.
-- A filename beginning with today's date in `YYYY-MM-DD-` format, saved outside the repo, such as `/tmp/2026-07-14-explanation-auth-cache.html`.
+Infer and state the reader contract before outlining:
 
-Pre-render Mermaid to inline SVG when a graph is needed. A Mermaid CDN is allowed only when the user explicitly accepts a network dependency; disclose it in the artifact and final response.
+- Who is the likely reader, and what can they safely be assumed to know?
+- What should they be able to explain, predict, or review after reading?
+- Which change and surrounding system are in scope?
+- What evidence was inspected, and what remains inferred or unknown?
 
-Open or report the file path after creation if the environment supports it.
+If the audience is unspecified, write for a technically capable engineer who is new to this subsystem. Do not attempt to serve beginners and experts by repeating everything twice. Keep the main causal story concise, and use progressive disclosure for optional prerequisites and implementation depth.
 
-## Research First
+## Investigate the Change as a System
 
-Do not write the explanation from the diff alone. A good explanation reconstructs the system that made the change necessary.
+Do not write from the patch alone. Reconstruct enough of the system to explain why the patch has its shape.
 
-Before drafting, inspect:
+Inspect:
 
-1. The requested diff, branch, PR, or commit range.
-2. The files directly changed.
-3. Adjacent modules, tests, types, schemas, routes, public APIs, or callers that explain the change.
-4. Existing docs or README sections that define domain terms.
-5. Test output, CI hints, or package scripts when relevant and cheap to inspect.
+1. The requested diff, branch, PR, or commit range and its stated intent.
+2. Changed files and tests.
+3. Callers, callees, types, schemas, routes, state, configuration, and public boundaries touched by the behavior.
+4. Existing documentation and tests that reveal invariants or domain language.
+5. Test output, CI evidence, migrations, compatibility constraints, or operational effects when relevant.
 
-Prefer source-backed statements. If a point is inferred rather than directly shown by code, phrase it as an inference and explain the evidence.
+Build an evidence map while investigating:
 
-When the change is large, group files by conceptual role instead of walking them alphabetically. Useful groupings include data model, API boundary, state management, UI, tests, migration, generated files, and cleanup.
+- **Observed:** directly supported by inspected code, diff, test, or authoritative documentation.
+- **Inferred:** a reasoned interpretation whose evidence can be named.
+- **Open:** important behavior that could not be established.
 
-## Explanation Strategy
+Trace behavior across the boundary that matters to the reader. Stop when additional exploration no longer changes the mental model, consequences, or review risk.
 
-Write for two readers at once:
+## Build the Mental Model Before the Page
 
-- A beginner who needs enough background to understand the system.
-- A familiar reviewer who wants the essence quickly.
+Before writing HTML, draft these in plain text:
 
-Use progressive disclosure to serve both. Put a compact executive summary and change map near the top, then provide deeper beginner background in skimmable cards, callouts, or expandable sections. This works because the page should prioritize the most important concepts first while keeping advanced or remedial material available.
+1. **One-sentence model:** the single idea the reader should retain.
+2. **Prior model:** the smallest description of how the relevant system behaved before.
+3. **Pressure for change:** the concrete failure, constraint, or opportunity that made the old model insufficient.
+4. **New model:** what responsibility, data flow, invariant, or boundary changed.
+5. **Worked example:** one named input or scenario traced through old and new behavior.
+6. **Mechanism chain:** how conceptual groups of code realize the new model.
+7. **Consequences:** observable behavior, benefits, trade-offs, risks, limits, and unanswered questions.
 
-Favor recognition over recall. Readers should not have to remember names from earlier sections to follow later ones. Repeat small labels in diagrams, show component names consistently, and keep a visible table of contents.
+If these cannot be written clearly, investigate further before designing the artifact.
 
-Use concrete examples early. Toy data, example requests, before/after state snapshots, and miniature UI mockups usually teach better than abstract prose.
+## Teach in Causal Order
 
-## Required Page Structure
+Organize the explanation around questions a reader naturally needs answered:
 
-Use this structure unless the user's request demands otherwise:
+1. Why should I care about this change?
+2. What did the relevant system do before?
+3. What was the old model unable to express or guarantee?
+4. What is the new idea, in plain language?
+5. Can I see one concrete case travel through both models?
+6. Which code changes implement each step of that idea?
+7. What behavior can I now predict, and where does the model stop applying?
 
-1. **Title and Summary**
-   - Name the change in plain language.
-   - Include repository/branch/commit range or PR identifier when known.
-   - Include a 3-5 bullet "what changed" summary.
-   - Include a small change map: concepts, files, and why they matter.
+Use headings that state answers or distinctions rather than generic containers. “Invalidation now follows invoice identity” teaches more than “Implementation.”
 
-2. **Table of Contents**
-   - Link to every major section.
-   - Keep it visible and useful on desktop; make it mobile-friendly.
+### Background earns its place
 
-3. **Background**
-   - Start broad for beginners: domain terms, architecture, request flow, or data lifecycle.
-   - Then narrow to the exact subsystem touched by the change.
-   - Use callouts for definitions, invariants, and surprising constraints.
-   - If the background is long, use `<details>` blocks for optional depth.
+Include only prerequisites needed to understand the change. Begin with the closest useful system boundary, not the history of the whole repository. Define terms at first use and place remedial or optional depth behind disclosures.
 
-4. **Intuition**
-   - Explain the core idea without implementation detail.
-   - Use at least one concrete toy example with named data.
-   - Include diagrams when they clarify flow, state, ownership, or before/after behavior.
-   - Explain why the old behavior or structure was insufficient and why the new shape helps.
+### Intuition precedes implementation
 
-5. **Code Walkthrough**
-   - Group changes by conceptual role.
-   - For each group, explain the intent, the important files, and the behavioral effect.
-   - Include short code excerpts only when they illuminate the point. Avoid pasting large diffs.
-   - Connect code-level changes back to the intuition section.
+Explain the new model without relying on code syntax. Prefer one strong analogy or diagram over several decorative ones. State where an analogy breaks down so it does not become a false model.
 
-6. **Behavior, Risks, and Tests**
-   - State observable behavior before and after.
-   - Identify edge cases, compatibility concerns, migrations, performance implications, and security/privacy concerns when relevant.
-   - Summarize tests changed or missing. If tests were not inspected or could not be run, say so clearly in the page.
+### Worked examples carry the explanation
 
-7. **Quiz (learning mode only)**
-    - Include only when the user explicitly asks for a learning-oriented explanation or practice.
-   - Make questions test real understanding of the change, not trivia.
-   - Each question should have 3-4 options, exactly one best answer, and immediate feedback after click.
-   - Feedback should explain why the selected answer is correct or incorrect.
+Use concrete names and values. Follow one request, record, event, state transition, or user action through the old path and new path. At each meaningful step, connect:
 
-8. **Glossary or Reference Notes**
-   - Include only terms that help the reader navigate the change.
-   - Keep it compact.
+**input/state → rule or decision → output/state → relevant code boundary**
 
-## Visual Report Structure
+The example should let the reader predict a nearby case, not merely illustrate the happy path.
 
-Borrow the architecture-review style: the page is a visual report with prose supporting the visuals, not prose occasionally interrupted by decoration.
+### Code is evidence for the model
 
-Use these report elements where helpful:
+Present a literate walkthrough in causal or dependency order, not alphabetical file order. Group edits by conceptual role. For each group, explain:
 
-- **Compact legend** near the top: explain recurring visual symbols such as request, module, data store, external dependency, old path, new path, removed code, and risk.
-- **Change map cards**: show each conceptual change as a card with files, purpose, before/after behavior, and reader impact.
-- **Before/After panels**: put old and new flows side by side when the change alters structure or behavior.
-- **Topline takeaway card**: state the one thing a reviewer should remember.
-- **Deep-dive cards**: keep detailed background or file walkthroughs skimmable.
+- the claim it implements;
+- the relevant code boundary and short excerpt;
+- how it changes the worked example;
+- any invariant, trade-off, or edge case it introduces.
 
-Do not make every card look identical. Vary between flow diagrams, state snapshots, file role maps, and code excerpts based on what each idea needs.
+Do not paste large diffs or narrate syntax that is already self-explanatory.
 
-## Diagram Guidance
+### End with implications and limits
 
-Use a small number of reusable diagram families rather than inventing a new visual system for every point. Pick the medium based on the idea:
+Distinguish verified behavior from expected behavior. Cover tests, compatibility, migration, performance, security/privacy, and operational consequences only when relevant. State what was not inspected or proven when that limitation changes how the explainer should be trusted.
 
-- Use **Mermaid** for graph-shaped relationships: dependency graphs, request flows, state transitions, call sequences, event timelines, and before/after flowcharts.
-- Use **hand-built HTML/CSS/SVG** for editorial visuals: UI mockups, mass diagrams, card comparisons, cross-sections, risk matrices, and visuals where Mermaid's layout fights the story.
+## Retrieval Practice
 
-Good families:
+Include five medium-difficulty questions by default. The quiz is a speed regulator on the AI loop: it should require the reader to retrieve and apply the model before treating the change as understood. Omit it only when the user asks for a brief/non-learning artifact or when the artifact's purpose clearly makes a quiz inappropriate.
 
-- **Before/After cards** for behavior changes.
-- **System flow diagrams** for data movement between components.
-- **State snapshots** for caches, stores, queues, or database records.
-- **Mini UI mockups** for user-facing changes.
-- **File role maps** for large PRs.
-- **Sequence diagrams** for request/response or async message order.
-- **Call-graph collapse diagrams** when many small calls become one deeper module or one clearer path.
-- **Mass diagrams** when the change shifts complexity from a broad public surface into a deeper implementation.
+Questions should collectively test:
 
-Do not use ASCII art. Use real component names and example data in diagrams. A diagram without labels or example data usually adds decoration, not understanding.
+- the prior-system constraint or motivation;
+- the new causal model;
+- prediction for a concrete case;
+- connection between model and implementation;
+- an edge case, trade-off, or limit.
 
-### Mermaid Pattern
+Use plausible distractors based on real misconceptions. Keep answer length, specificity, grammar, and position from revealing the correct option. Give immediate explanatory feedback that repairs the misconception, not just a correct/incorrect label.
 
-For Mermaid diagrams, include Mermaid initialization in the HTML and render diagrams like this:
-
-```html
-<figure class="diagram-card">
-  <figcaption>Before: every request recalculates permissions</figcaption>
-  <pre class="mermaid">
-flowchart LR
-  Browser[Browser] --> Route[GET /projects]
-  Route --> Auth[Auth middleware]
-  Auth --> DB[(permissions table)]
-  DB --> Route
-  Route --> Response[Project list]
-  </pre>
-</figure>
-```
-
-Prefer Mermaid `flowchart` for data flow, `sequenceDiagram` for ordered interactions, `stateDiagram-v2` for state machines, and `classDiagram` only when domain type relationships are the point. Keep Mermaid diagrams small enough to understand at a glance.
-
-When using Mermaid via CDN, include an initialization block like:
-
-```html
-<script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-  mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "strict" });
-</script>
-```
-
-The rest of the page should remain standalone: custom CSS, quiz JavaScript, and content live in the HTML file.
-
-## HTML Requirements
-
-The file should be a single HTML artifact:
-
-- Use inline `<style>` and `<script>` blocks.
-- Do not link to external CSS, fonts, images, or app-specific JavaScript.
-- Mermaid should be pre-rendered as inline SVG. A CDN is allowed only with explicit user consent and must be disclosed.
-- Use responsive CSS so the page is readable on phones.
-- Use accessible colors with good contrast.
-- Use semantic landmarks where practical: `<main>`, `<section>`, `<nav>`, `<aside>`, `<figure>`.
-- Include `meta viewport` and `charset` tags.
-- Use buttons for interactive quiz choices, not clickable divs.
-- Ensure quiz interactions work without a build step.
-
-For code blocks:
-
-- Always use `<pre><code>...</code></pre>` for code excerpts.
-- Escape HTML characters inside code excerpts.
-- Ensure CSS for `pre` or code block containers includes `white-space: pre` or `white-space: pre-wrap`.
-- Before finishing, scan the HTML source and confirm every code block will preserve newlines.
-
-## Writing Style
-
-Aim for clear, flowing technical prose in the spirit of Martin Kleppmann: precise, concrete, and engaging without hype. Prefer calm explanations that build a mental model step by step.
-
-Use transitions between sections. The reader should feel guided from context, to intuition, to implementation, to validation.
-
-Avoid:
-
-- Marketing language.
-- Unexplained acronyms.
-- Saying "simply" or "obviously" about complex code.
-- Over-indexing on file-by-file narration.
-- Treating tests as an afterthought.
+End the learning sequence with one short transfer prompt that asks the reader to predict behavior for a nearby case not already walked through. It may be reflective rather than scored.
 
 ## Workflow
 
-1. Identify the requested change. If the user did not specify a range, inspect the current branch/worktree and infer the likely target; ask one short clarifying question only if multiple interpretations would produce different explanations.
-2. Gather evidence from diffs and surrounding code.
-3. Build a concept map: old model, new model, changed files, behavioral consequences, and risks.
-4. Draft the narrative before writing HTML. Decide which diagrams and examples will carry the explanation.
-5. Follow `HTML-REPORT.md`, then start from report-builder's `report-scaffold.html`; add only change-specific structure, figures, and quiz behavior.
-6. Create the HTML file outside the repo. Prefer `/tmp` unless the user requested another global location.
-7. Validate the artifact:
-   - Filename starts with today's date.
-   - File is outside the repository.
-   - HTML has embedded CSS and page JS.
-    - Any Mermaid CDN usage has explicit user consent and is disclosed.
-   - Table of contents links resolve.
-   - Quiz buttons reveal feedback.
-   - Code blocks use `<pre><code>` and preserve whitespace.
-   - Page is usable at mobile width.
-8. Tell the user the saved path and summarize what the page covers.
+1. Identify the change and reader contract. If the target is ambiguous and different choices would produce different explainers, ask one concise question.
+2. Inspect the diff and surrounding system; record observed, inferred, and open claims.
+3. Draft the seven-part mental model before HTML.
+4. Choose the minimum examples and visuals that carry the causal story.
+5. Follow [HTML-REPORT.md](HTML-REPORT.md) to compose the artifact with report-builder.
+6. Validate the factual claims, learning sequence, quiz quality, HTML behavior, accessibility, and offline operation.
+7. Return the absolute file path and briefly state scope, evidence inspected, and material limitations.
 
-## Quality Checklist
+## Quality Check
 
-Before final response, verify:
+Before delivery, verify:
 
-- The explanation makes the purpose of the change clear in the first screenful.
-- Beginner background is present but skimmable.
-- The intuition section can be understood without reading code.
-- The code walkthrough is grouped by ideas, not just files.
-- Diagrams contain labels and concrete example data.
-- Risks and tests are covered honestly.
-- The quiz has five meaningful questions with feedback.
-- The HTML is a single-file artifact; if it depends on Mermaid CDN, that dependency has explicit user consent and is disclosed.
-- The final response includes the absolute path to the generated HTML file.
+- The first screenful states what changed, why it matters, and what the reader will understand.
+- The explainer teaches a coherent old model and new model rather than listing edits.
+- At least one worked example connects concept, behavior, and code.
+- The walkthrough follows causality or dependency order.
+- Every visual has a teaching job and labeled concrete data.
+- Material claims are observed, clearly inferred, or left open.
+- Consequences and limits follow from the model and evidence.
+- Unless intentionally omitted, five questions test retrieval and application without answer-pattern clues.
+- A reader who succeeds can predict a nearby case, not just repeat the summary.
