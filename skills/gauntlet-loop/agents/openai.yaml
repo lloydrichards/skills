@@ -1,0 +1,7 @@
+interface:
+  display_name: "Gauntlet Loop"
+  short_description: "Plan, implement, challenge, and prove code changes"
+  default_prompt: "Use $gauntlet-loop to implement this task through grounded planning, temporary inline anchors, independent verification, adversarial review, and evidence-based iteration."
+
+policy:
+  allow_implicit_invocation: false
