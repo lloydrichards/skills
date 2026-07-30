@@ -43,8 +43,9 @@ Do not restyle ordinary HTML elements in a consumer. Do not copy the shared CSS 
 3. Build a claim outline before HTML. Make the reasoning chain visible and keep conclusions within the inspected evidence.
 4. Copy `report-scaffold.html` as the starting artifact. Replace placeholders and remove unused optional patterns.
 5. Add only report-specific structures and visuals. Extend with semantic or component tokens derived from the shared system; do not add raw colors or an unrelated type/spacing scale.
-6. Use static Mermaid only for graph-shaped relationships. Prefer annotated HTML or inline SVG for editorial explanation. Pre-render Mermaid to inline SVG; a disclosed CDN is allowed only with user consent.
-7. Inspect at desktop and 320px widths. Check keyboard navigation, headings and landmarks, disclosures, links, light/dark themes, reduced motion, and print.
+6. For code examples where syntax helps comprehension, use the scaffold's Highlight.js integration with an explicit `language-*` class; follow the pattern in `DESIGN-SYSTEM.md`. Keep incidental snippets unhighlighted.
+7. Use Mermaid source in `<pre class="mermaid">` for graph-shaped relationships and let the scaffold's Mermaid library render it. Do not hand-code or pre-render an equivalent SVG. Use annotated HTML or purpose-built inline SVG only when the visual is not naturally expressible as a Mermaid graph.
+8. Inspect at desktop and 320px widths. Check keyboard navigation, headings and landmarks, disclosures, links, light/dark themes, reduced motion, and print.
 
 ## Quality bar
 
@@ -54,4 +55,4 @@ Do not restyle ordinary HTML elements in a consumer. Do not copy the shared CSS 
 - Essential evidence, risks, limitations, conclusions, and actions remain visible; disclosures contain supporting depth.
 - The report uses the shared scaffold and primitives. Local CSS is limited to domain-specific layout or visualization.
 - Meaning survives without color, images, animation, or interaction.
-- The artifact is self-contained, responsive, keyboard-usable, and printable.
+- The artifact is responsive, keyboard-usable, and printable. Highlight.js and Mermaid are the permitted runtime dependencies; disclose them and preserve readable code, diagram source, and nearby explanations when they are unavailable.

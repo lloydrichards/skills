@@ -13,6 +13,20 @@
       }
     } catch {}
   </script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (globalThis.hljs) globalThis.hljs.highlightAll();
+    });
+  </script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: 'strict'
+    });
+  </script>
   <style>
     :root {
       color-scheme: light dark;
@@ -40,6 +54,12 @@
       --color-data-6: light-dark(oklch(0.45 0.155 265), oklch(0.76 0.135 265));
       --color-code: light-dark(oklch(0.22 0.009 255), oklch(0.14 0.006 255));
       --color-code-ink: oklch(0.94 0.004 255);
+      --color-syntax-comment: oklch(0.72 0.018 255);
+      --color-syntax-keyword: oklch(0.78 0.145 300);
+      --color-syntax-string: oklch(0.80 0.125 151);
+      --color-syntax-number: oklch(0.84 0.125 75);
+      --color-syntax-type: oklch(0.80 0.105 220);
+      --color-syntax-function: oklch(0.79 0.115 250);
       --color-print-paper: #fff;
       --color-print-ink: #111;
       --color-print-muted: #333;
@@ -102,6 +122,12 @@
       --inline-code-surface: var(--surface-note);
       --inline-code-border: var(--border-subtle);
       --inline-code-text: var(--text-primary);
+      --syntax-comment: var(--color-syntax-comment);
+      --syntax-keyword: var(--color-syntax-keyword);
+      --syntax-string: var(--color-syntax-string);
+      --syntax-number: var(--color-syntax-number);
+      --syntax-type: var(--color-syntax-type);
+      --syntax-function: var(--color-syntax-function);
       --focus-ring: var(--text-link);
       --focus-ring-width: 0.1875rem;
       --focus-ring-offset: 0.1875rem;
@@ -142,6 +168,15 @@
     :not(pre) > code { padding: 0.12em 0.35em; border: 1px solid var(--inline-code-border); border-radius: var(--radius-sm); background: var(--inline-code-surface); color: var(--inline-code-text); font-size: 0.92em; overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
     pre { overflow: auto; padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-code); color: var(--text-code); white-space: pre; tab-size: 2; }
     pre code { font-size: var(--text-body-2); }
+    pre.mermaid { display: flex; justify-content: center; background: var(--surface-raised); color: var(--text-primary); white-space: normal; }
+    pre.mermaid svg { max-inline-size: 100%; block-size: auto; }
+    .hljs-comment, .hljs-quote { color: var(--syntax-comment); font-style: italic; }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal { color: var(--syntax-keyword); }
+    .hljs-string, .hljs-regexp, .hljs-template-tag, .hljs-template-variable { color: var(--syntax-string); }
+    .hljs-number, .hljs-symbol, .hljs-bullet { color: var(--syntax-number); }
+    .hljs-type, .hljs-built_in, .hljs-title.class_, .hljs-variable.language_ { color: var(--syntax-type); }
+    .hljs-title.function_, .hljs-property, .hljs-attr { color: var(--syntax-function); }
+    .hljs-meta, .hljs-params { color: var(--text-code); }
     blockquote { margin-inline: 0; padding-inline-start: var(--space-3); border-inline-start: 3px solid var(--border-strong); color: var(--text-secondary); }
     table { inline-size: 100%; border-collapse: collapse; font-size: var(--text-body-2); font-variant-numeric: tabular-nums; }
     caption, figcaption { color: var(--text-secondary); font-size: var(--text-body-2); text-align: left; }
@@ -241,6 +276,8 @@
       main, main.wide, .report-footer { inline-size: 100%; max-inline-size: none; padding: 0; }
       .skip-link, .theme-toggle { display: none; }
       a { color: inherit; }
+      pre, pre.mermaid { background: var(--color-print-paper); color: var(--color-print-ink); }
+      [class^="hljs-"], [class*=" hljs-"] { color: inherit; }
       .figure, details, table, pre { break-inside: avoid; }
       details:not([open]) > :not(summary) { display: block; }
     }

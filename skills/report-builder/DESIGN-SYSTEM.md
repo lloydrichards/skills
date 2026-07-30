@@ -58,6 +58,17 @@ The scaffold styles the elements a report should normally need:
 
 Use semantic HTML first, then apply the shared type role to headings. A consuming skill should be able to write prose, lists, tables, figures, and code without supplying any CSS.
 
+### Syntax-highlighted code
+
+The scaffold loads Highlight.js 11.11.1 from cdnjs and calls `highlightAll()` after the document is ready. Add an explicit `language-*` class so the library uses the intended grammar:
+
+```html
+<pre><code class="language-typescript">const result: Result =
+  await loadReport("review")</code></pre>
+```
+
+Write plain escaped source code; do not add highlighting spans manually. The shared CSS maps Highlight.js token classes onto the report palette, including print-safe output. If the CDN or JavaScript is unavailable, the unmodified code remains readable. For short or incidental snippets, add `class="nohighlight"` or use plain inline `code`.
+
 ### Blockquotes
 
 Use `blockquote` for material quoted from another source or a deliberately distinct quoted voice. Attribute the source when known with a nearby `cite` or source link. Do not use a blockquote as a decorative pull quote, recommendation box, or substitute for a callout. State material conclusions in the report's own voice even when a quotation supports them.
@@ -119,6 +130,24 @@ Outcome states and evidence states answer different questions. `success`, `warni
 `figure` groups one coherent diagram, image, annotated example, or visual comparison with its explanation. Every figure needs a `figcaption` that states its takeaway, not merely its format. Give informative images useful `alt` text and decorative images empty `alt`. For inline SVG, provide a `title` and, when the visual needs fuller explanation, a `desc` connected with `aria-labelledby`.
 
 A figure must not be the only location of a material conclusion or underlying values. Provide a nearby textual explanation and use a table or list when readers need exact data. Prefer prose or a compact table when the relationship is not materially easier to understand visually.
+
+### Mermaid diagrams
+
+Use Mermaid for graph-shaped relationships such as flows, sequences, state transitions, dependencies, and hierarchies. Write Mermaid source and let the scaffold's Mermaid 11 integration render it; do not manually recreate the diagram as SVG:
+
+```html
+<figure class="figure">
+  <pre class="mermaid">
+flowchart LR
+  a[Node] --> b[Next node]
+  </pre>
+  <figcaption>The first node leads to the next node.</figcaption>
+</figure>
+```
+
+In Markdown-oriented planning, this corresponds to a fenced ` ```mermaid ` code block. In the final HTML artifact, use Mermaid's official `<pre class="mermaid">` container—not `<pre><code class="language-mermaid">`, which Highlight.js would treat as source code rather than render as a diagram.
+
+Keep the source in the report and use simple, descriptive node labels. The scaffold imports Mermaid as an ESM module, initializes it with `startOnLoad: true`, and uses `securityLevel: "strict"`. Retain a nearby prose explanation and a takeaway-oriented `figcaption` because the rendered SVG must not be the only carrier of meaning. Use annotated HTML or purpose-built inline SVG only when the visual is not naturally expressible as a Mermaid graph.
 
 ### Progressive disclosure
 
