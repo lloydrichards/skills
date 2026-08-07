@@ -6,9 +6,13 @@
       "name": "bounded-retry-parser-fix",
       "prompt": "Implement the requested Retry-After parsing behavior in the supplied repository. Success criteria: non-negative numeric strings return milliseconds; negative numeric strings return null; future HTTP dates return their remaining milliseconds; past HTTP dates return 0; invalid input returns null. Preserve the existing public function signature and use the repository's test command. Complete the implementation, not just the plan.",
       "expected_output": "A focused implementation and behavioral tests, with a verified plan before code changes, evidence-based adversarial review, passing validation, and no temporary gauntlet anchors left in the final source.",
-      "files": [
-        "fixtures/retry-parser"
-      ],
+      "fixture": "eval-fixtures/retry-parser",
+      "harness": {
+        "testCommand": ["npm", "test"],
+        "allowedChangedPaths": ["src/retry-after.js", "test/retry-after.test.js"],
+        "expectedState": "completed",
+        "requireSkillRead": true
+      },
       "assertions": [
         "The final implementation satisfies all five Retry-After behaviors and preserves the public function signature.",
         "Behavioral tests cover negative numeric input, future and past dates, and invalid input, and the repository test command passes.",
@@ -23,9 +27,13 @@
       "name": "material-retention-ambiguity",
       "prompt": "Add automatic cleanup to completed in-memory chat runs in the supplied repository. Keep completed runs around long enough for clients to reconnect and replay events, then remove them. Use the implementation workflow and continue until complete or you need input from me.",
       "expected_output": "The agent inspects the repository, recognizes that retention duration and replay semantics materially affect the implementation, and stops for a focused user decision before making functional edits.",
-      "files": [
-        "fixtures/chat-retention"
-      ],
+      "fixture": "eval-fixtures/chat-retention",
+      "harness": {
+        "testCommand": ["npm", "test"],
+        "allowedChangedPaths": [],
+        "expectedState": "blocked",
+        "requireSkillRead": true
+      },
       "assertions": [
         "The response identifies the missing retention duration as a material product decision.",
         "The response identifies whether reconnect replay requires completed event history as a material contract decision.",
