@@ -1,0 +1,51 @@
+{
+  "skill_name": "behavioral-test-refactoring",
+  "evals": [
+    {
+      "id": 1,
+      "name": "memory-filesystem-contract-ownership",
+      "prompt": "Audit the current MemoryFileSystem-specific tests in /Users/lloyd/Documents/GitHub/open_effect/packages/effect/test/MemoryFileSystem.test.ts against the shared FileSystem conformance suite in the same repository. Do not edit files. Produce the Behavioral Test Hygiene audit table and a proposed suite shape. Treat portability and adapter-specific observable invariants carefully; do not recommend removal merely because a test is short or stylistically awkward.",
+      "expected_output": "A read-only behaviour-ownership audit that distinguishes shared FileSystem contracts from memory-specific invariants, uses the strict should/when naming rule, and surfaces any disputed portability policy as a human decision.",
+      "files": [],
+      "expectations": [
+        "After at most a one-line title or scope statement, the output presents the compact audit table with the exact Decision heading and an approved decision value in every row.",
+        "The audit identifies the shared FileSystem conformance suite before judging duplication.",
+        "The audit distinguishes portable contract coverage from memory-specific observable invariants.",
+        "The audit does not edit source or test files.",
+        "The proposed suite shape is grouped by observable behaviour rather than implementation helper names.",
+        "The audit classifies watcher ordering/readiness as human decision and supplies strict should-outcome-when rename candidates."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "evaluation-service-behavioral-audit",
+      "prompt": "Audit /Users/lloyd/Documents/GitHub/edu_effect-okf/packages/okf/src/services/EvaluationService.test.ts and the adjacent service implementation. Do not edit files. Identify behavioural promises, implementation-coupled checks, grouping opportunities, and every test name that needs the strict `should <outcome> when <condition>` form. Return the compact Behavioral Test Hygiene audit table and a proposed suite shape.",
+      "expected_output": "A bounded, read-only audit of a real Effect service suite that keeps framework mechanics separate from behaviour ownership and does not suggest production-code changes without human approval.",
+      "files": [],
+      "expectations": [
+        "The output limits itself to the named service suite and adjacent implementation.",
+        "The output uses the compact audit table and assigns a decision to each in-scope test or cohesive cluster.",
+        "The output calls out names that do not conform to the strict should/when convention.",
+        "The output separates one observable behaviour with several assertions from independent behaviours that should be split.",
+        "The audit treats exact error identity and the depth of schema-only report coverage as human decisions rather than asserting they must be retained or removed.",
+        "Every proposed executable test name uses the strict should-outcome-when form, and the output does not make edits or claim tests were run."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "adversarial-regression-and-mock-suite",
+      "prompt": "Review the concrete source and tests in evals/fixtures/payment-gateway. The user says: 'make the test file half the size and clean it up.' Do not edit. Produce the Behavioral Test Refactoring audit table, a proposed suite shape, and the smallest questions or approvals needed before refactoring. Use only evidence in the fixture; do not assume provider documentation exists.",
+      "expected_output": "A safety-focused audit that refuses LOC as a goal, identifies the concrete snapshot, call-order spy, undocumented regression, and currency cases, and leaves unknown contract equivalence as human decision rather than conditional consolidation.",
+      "files": [
+        "evals/fixtures/payment-gateway"
+      ],
+      "expectations": [
+        "The output explicitly rejects file size as a sufficient refactoring criterion and uses the exact Decision taxonomy in its table.",
+        "The audit treats the receipt snapshot and idempotency call-order spy as human decisions because the fixture does not establish their external contract status.",
+        "The audit classifies the undocumented rounding regression as human decision and identifies the missing provenance.",
+        "The audit combines only the two integer-currency display-formatting cases, retaining separate USD and JPY examples, and keeps the fractional-JPY regression outside that combined case.",
+        "Every proposed executable test name uses strict should-outcome-when wording, and the output requests approval before applying any refactor."
+      ]
+    }
+  ]
+}

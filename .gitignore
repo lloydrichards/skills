@@ -20,3 +20,8 @@
 !skills/learn/**
 !skills/report-builder/
 !skills/report-builder/**
+!skills/behavioral-test-refactoring/
+!skills/behavioral-test-refactoring/**
+!tools/
+!tools/skills-eval/
+!tools/skills-eval/**
