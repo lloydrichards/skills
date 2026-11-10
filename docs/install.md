@@ -78,3 +78,47 @@ For a persistent machine selection, create the machine-local file only after rev
 Its default location is `$XDG_CONFIG_HOME/lab-skills/config.json`, or `$HOME/.config/lab-skills/config.json`. CLI fields override its corresponding fields. An explicit `--config` overrides `LAB_SKILLS_CONFIG`. No configuration file is created automatically. apply requires an explicit home and target through configuration or flags.
 
 Read [the contract](contract.md) before using apply and [the recovery procedure](recovery.md) if doctor reports interrupted operations. Existing Mac directories are not automatically adopted. Python ownership state blocks mutation and needs a separately reviewed migration.
+
+## Use the live inspector
+
+From the repository root, build and open the live plan inspector:
+
+```sh
+bun run tui
+```
+
+The initial view uses the current home, profiles, skills, and targets from the normal configuration resolver. It shows actual ownership state, changes, and diagnostics. Add the normal flags to choose another scope:
+
+```sh
+bun run tui --home /home/lloyd --profile default --profile effect --target agents
+```
+
+After building, use `--tui` with any command:
+
+```sh
+node apps/lab-skills/bin/lab-skills.mjs plan --tui
+node apps/lab-skills/bin/lab-skills.mjs status --tui
+node apps/lab-skills/bin/lab-skills.mjs doctor --tui
+node apps/lab-skills/bin/lab-skills.mjs validate --tui
+node apps/lab-skills/bin/lab-skills.mjs apply --tui --home /home/lloyd --target agents
+```
+
+`apply --tui` first opens a plan. It retains the command's explicit home and target requirement. In any inspector session, p opens a plan, s shows installed state, d runs doctor, and v validates every source definition. Press r to refresh or ? for help. Up and Down or j and k select an item. Page Up and Page Down scroll its preview. Press m to switch between Markdown and source details, Esc to edit profiles, and t to edit targets. Profile edits retain explicit skill selections. Selection edits stay in the session and do not write machine configuration.
+
+A clear plan offers Continue, followed by a confirmation of the exact destination roots and changes. Back is selected initially. Choosing Install runs the real apply workflow. If the plan changed after review, the installer returns SOURCE_CHANGED before fetching or writing, and requires a fresh review. Local edits and other conflicts block installation. Warnings remain distinct from blockers. Downloads can be interrupted. Once the installer enters its transaction, an exit request waits for commit or rollback.
+
+The inspector labels Markdown from the checkout separately from installed Markdown. New upstream skills do not download previews during inspection. Source details show their repository, pin, and content identity. Installed upstream skills can show their existing owned copy. Previews use the MIT-licensed OKF Graph Markdown renderer, adapted locally with its types, parser, and table component. Frontmatter is hidden, terminal controls are stripped, tabs are expanded, HTML stays text, and links are not opened.
+
+Use a terminal at least 41 columns wide and 24 rows tall. The list and preview stack in narrow terminals. Restart after resizing. `--tui` requires terminal input and output and cannot be combined with `--json`. Omit `--tui` for the existing readable or JSON output. The session exits with the last command's result code and prints that result.
+
+## Keep using the design scratchpad
+
+The sample-data experiments remain separate from the live inspector:
+
+```sh
+bun run tui:demo
+bun run tui:demo --preview --plain --width 48
+bun run tui:demo --demo profiles
+```
+
+The scratchpad never installs anything. The live inspector runs through `apps/lab-skills/src/tui/live.ts` and the same command execution and installer services as the plain CLI. The sample layouts remain in `apps/lab-skills/src/scratchpad.ts` and `apps/lab-skills/src/tui/combined.ts`.

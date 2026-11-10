@@ -14,6 +14,8 @@ agents means `.agents/skills` under the target home. Other targets are codex `.c
 
 Default resolves to seven skills. Add profile effect for eight. Profiles frontend, learning, explanations, advanced, releases and llm remain optional. Explicit profiles replace the implicit default; use both `--profile default` and `--profile effect` to combine them. `--harness` remains an alias for `--target`.
 
+`--tui` opens an opt-in interactive session on any command. It requires a terminal and is incompatible with `--json`. The initial command remains read-only, including an initial plan for `apply --tui`. A session can run other commands. Only choosing Install on an explicit confirmation runs apply, using the displayed home and target roots. Scope edits replace their arrays and never persist machine configuration. See [live inspector instructions](install.md#use-the-live-inspector).
+
 `status` and `plan` share an assessment and write no files, create no directories, acquire no locks and fetch no payloads. Offline plans cannot certify network availability. The supported launcher also prevents Bun's default runtime transpiler cache. User-enabled runtime profilers, Node compile caches and external monitoring tools are outside this filesystem guarantee; disable those when auditing read-only behavior.
 
 JSON output goes to stdout, including failures. Human errors go to stderr. An available update is exit 0; an operational failure is exit 1; invalid input/source is exit 2; installation conflicts and interrupted operations are exit 3. No force, adoption, removal, Git synchronization or permission/authentication command exists.
