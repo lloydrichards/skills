@@ -311,6 +311,30 @@
       "prerequisites": [
         "Platform-specific engine 0.1.5 installed separately; browser/image tools as needed"
       ]
+    },
+    "make-pr": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/make-pr"
+      },
+      "dependencies": [
+        "changeset",
+        "technical-writing",
+        "unslop"
+      ],
+      "prerequisites": [
+        "Externally managed but skill and authenticated GitButler CLI; install and configure separately"
+      ]
+    },
+    "mutation-test-loop": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/mutation-test-loop"
+      },
+      "dependencies": [],
+      "prerequisites": [
+        "Fresh subagent delegation and the target project test runner; behavioral-test-refactoring is optional for broad suite redesign"
+      ]
     }
   },
   "profiles": {
@@ -348,7 +372,8 @@
       "improve-codebase-architecture"
     ],
     "releases": [
-      "changeset"
+      "changeset",
+      "make-pr"
     ],
     "linting": [
       "install-anti-slop"
@@ -361,6 +386,9 @@
       "skill-doctor",
       "rubber-duck",
       "bro"
+    ],
+    "mutation-audits": [
+      "mutation-test-loop"
     ]
   },
   "external": {
@@ -371,14 +399,5 @@
       "reason": "CLI-provided skill stub; provenance and installed CLI version unresolved"
     }
   },
-  "candidates": {
-    "make-pr": {
-      "installable": false,
-      "reason": "Ownership confirmation pending"
-    },
-    "mutation-test-loop": {
-      "installable": false,
-      "reason": "Ownership confirmation pending; evaluation includes machine-specific checkout path"
-    }
-  }
+  "candidates": {}
 }

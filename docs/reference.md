@@ -21,3 +21,5 @@ JSON output goes to stdout, including failures. Human errors go to stderr. An av
 Installed copies normalize files to 0644 or 0755 based on the source executable flag, and directories to 0755. Ownership records then track full POSIX permission modes as well as content and directory membership. Later permission changes are conflicts.
 
 Git inspection does not invoke git status, clean/process filters, fsmonitor hooks or remote fetching. It compares local tree/index objects and raw worktree bytes. This can conservatively mark transformed files or submodules dirty; installation updates remain governed by content and pin identities.
+
+Owner-confirmed custom workflows are optional. `--profile releases` selects changeset and make-pr, including technical-writing and unslop dependencies. `--profile mutation-audits` selects mutation-test-loop. The but skill and authenticated GitButler CLI remain external prerequisites, not installer-managed dependencies. Mutation evaluation 1 uses a disposable copy of the bundled booking fixture instead of a machine-specific checkout. Its supplied ledger is historical example evidence, not proof of a new campaign.

@@ -72,7 +72,7 @@ export const validate = Effect.fn('Catalog.validate')(function* (root: string) {
     if (
       name in manifest.external ||
       name in manifest.candidates ||
-      ['but', 'gitbutler', 'rex', 'make-pr', 'mutation-test-loop'].includes(name)
+      ['but', 'gitbutler', 'rex'].includes(name)
     ) {
       return yield* Effect.fail(
         problem(
