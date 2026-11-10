@@ -199,9 +199,9 @@ Use `Effect.forkScoped`, `FiberSet`, or `FiberMap` for scoped background work. D
 
 ## Review Checklist
 
-- The class is domain-named and its self type matches.
+- The service follows the repository's chosen style: a domain-named class by default, or the optional module namespace convention where explicitly adopted. The class self type matches its identity.
 - The returned implementation satisfies the declared shape.
-- Implementation dependencies are acquired in `make` and do not leak from methods.
+- Implementation dependencies are acquired once in `make`, or in the optional module-style layer, and do not leak from methods.
 - Every public method requirement is either `never` or explicitly intentional.
 - `Default` is fully wired; partial layers have names that advertise open requirements.
 - Public errors describe caller decisions rather than implementation libraries.
