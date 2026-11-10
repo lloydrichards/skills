@@ -17,11 +17,11 @@ const getUser = (id: string) =>
   Effect.fail(new UserNotFound({ id }))
 ```
 
-- Use `Data.TaggedError` for runtime-internal failures. Use `Schema.TaggedErrorClass` when an error is serialized, crosses an I/O boundary, or is user-facing.
+- Use `Data.TaggedError` for runtime-internal failures. Use `Schema.TaggedError` when an error needs schema integration, is serialized, crosses an I/O boundary, or is user-facing.
 - Translate infrastructure errors into domain errors at adapter boundaries.
 - Include diagnostic context such as operation and stable identifiers, not secrets or unbounded payloads.
 - Keep precise errors when callers make different recovery decisions. Group implementation failures only when callers genuinely handle them the same way.
-- A cohesive `Schema.TaggedErrorClass` may expose a typed `reason` union when related failures share one transport or presentation policy. Use literal reasons for fieldless cases and tagged reasons when variants carry different data.
+- A cohesive `Schema.TaggedError` may expose a typed `reason` union when related failures share one transport or presentation policy. Use literal reasons for fieldless cases and tagged reasons when variants carry different data.
 
 ## Adapter Boundaries
 

@@ -50,7 +50,7 @@ If a task spans several branches, read all matching files before editing.
 - Prefer a domain-named `Context.Service` class with a separate shape interface when the codebase has not standardized on another current service-tag style.
 - Put `make` and production layers on the service class. Acquire dependencies in `make`, define methods there, and return an object that `satisfies` the service shape.
 - Model records with `Schema.Struct(...)` plus a same-name `interface`.
-- Model runtime-internal typed errors with `Data.TaggedError`; use `Schema.TaggedErrorClass` when errors are serialized, boundary-crossing, or user-facing.
+- Model runtime-internal typed errors with `Data.TaggedError`; use `Schema.TaggedError` when errors need schema integration, are serialized, cross a boundary, or are user-facing.
 - Read runtime config through `Config`, not direct `process.env` access in application logic.
 - Use `Schedule` for retry, repeat, polling, pacing, and backoff policies.
 - Use `Stream` for effectful sources that emit many values over time and need pull, backpressure, interruption, or transformation.
@@ -70,7 +70,7 @@ If a task spans several branches, read all matching files before editing.
 - Reusable boundary-crossing tagged variant: `Schema.TaggedStruct(...)` plus same-name `interface`.
 - Boundary-crossing tagged union: `Schema.TaggedUnion(...)` with `.cases`, `.guards`, and `.match`.
 - External/custom discriminator such as `type`: `Schema.Struct({ type: Schema.tag("variant"), ... })` plus `Schema.toTaggedUnion("type")` when union helpers are needed.
-- Runtime-internal typed failure: `Data.TaggedError`; serialized or user-facing typed failure: `Schema.TaggedErrorClass`.
+- Runtime-internal typed failure: `Data.TaggedError`; schema-integrated, serialized, or user-facing typed failure: `Schema.TaggedError`.
 - Unknown boundary payload: `Schema.decodeUnknownEffect(...)`.
 - Service boundary: domain-named `Context.Service<UserStore, UserStoreShape>()(...)` with static `make`; use `Live` for intentional open requirements and `Default` only when fully wired.
 - Public or non-trivial internal service method: `Effect.fn("Domain.operation")`.
@@ -103,7 +103,7 @@ If a task spans several branches, read all matching files before editing.
 
 - Do not use `as any`, non-null assertions, or unchecked casts to silence Effect typing problems.
 - Do not introduce `Schema.Class` or `Schema.TaggedClass` as default app data-modeling patterns.
-- Do not hand-roll `_tag` error classes when `Schema.TaggedErrorClass` fits.
+- Do not hand-roll `_tag` error classes when `Data.TaggedError` or `Schema.TaggedError` fits.
 - Do not use cause-level recovery when typed-error recovery is enough.
 - Do not use `Layer.mergeAll(...)` or `provideMerge(...)` as blind make-it-compile tools.
 - Do not hide required application authority, credentials, persistence, transports, or external services behind `Context.Reference` defaults.

@@ -109,10 +109,10 @@ Guidance:
 
 ## Errors
 
-`Schema.TaggedErrorClass` is the schema-aware class choice for typed Effect errors that are serialized, cross a boundary, or are user-facing. Prefer `Data.TaggedError` for failures that remain internal to one runtime and do not need schema integration.
+`Schema.TaggedError` is the schema-aware class choice for typed Effect errors that need schema integration, are serialized, cross a boundary, or are user-facing. Prefer `Data.TaggedError` for failures that remain internal to one runtime and do not need schema integration.
 
 ```ts
-export class PersistenceError extends Schema.TaggedErrorClass<PersistenceError>()(
+export class PersistenceError extends Schema.TaggedError<PersistenceError>()(
   "UserRepo.PersistenceError",
   {
     operation: Schema.String,
