@@ -18,6 +18,7 @@ import {
   renderLive,
   type ViewState,
 } from "../src/tui/live-view.js";
+import { literalValue } from "../src/tui/ui.js";
 import { runtimeLayer } from "../src/runtime.js";
 import { HttpBytes, SourceInspection } from "../src/services.js";
 import { problem } from "../src/error.js";
@@ -130,6 +131,22 @@ describe("Live command inspector", () => {
         );
         assert.include(rendered, encoded);
         assert.notInclude(rendered, "two spaces");
+        const path = "/tmp/a\u00a0\u00a0b\u2003c";
+        const details = Box.renderPlainSync(
+          renderLive(
+            { ...initialView(model), mode: "details" },
+            {
+              ...model,
+              result: {
+                ...model.result,
+                entries: [{ ...model.result.entries[0]!, path }],
+              },
+            },
+            100,
+            30,
+          ),
+        );
+        assert.include(details, literalValue(path));
       }).pipe(Effect.provide(live), Effect.scoped),
   );
 
