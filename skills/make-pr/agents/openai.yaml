@@ -1,0 +1,3 @@
+interface:
+  display_name: "Make PR"
+  short_description: "Publish current work with a concise PR body"

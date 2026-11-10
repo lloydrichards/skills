@@ -1,6 +1,5 @@
 # Open migration decisions
 
-- Owner-confirmed make-pr and mutation-test-loop are added separately in PR #2, including the portable mutation evaluation. This base change keeps their preserved snapshots outside managed selections.
 - Establish GitButler skill provenance and installed CLI versions, and Rex CLI versions. Their skill names are reserved as externally managed. Do not deduplicate their existing installations as part of this proposal.
 - Resolve code-review's tracker setup assumption before removing its explicit installation block. It is third-party, not a custom skill.
 - Verify discovery and precedence on HP's installed OpenCode and Pi versions. Select one discovery root per harness to avoid duplicate names. The manifests support variants but do not edit runtime permissions or configuration.

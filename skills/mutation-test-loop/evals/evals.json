@@ -1,0 +1,49 @@
+{
+  "skill_name": "mutation-test-loop",
+  "evals": [
+    {
+      "id": 1,
+      "name": "booking-resumable-audit",
+      "prompt": "In a disposable copy of the skill-relative fixture evals/fixtures/persistence-campaign, mutation-audit every active test reached through test/booking.test.mjs. Resolve the fixture relative to this skill folder, never the current working directory, and copy it into a temporary directory before running the campaign. Use one fresh subagent per test and do not trust a test that has not failed. Keep a resumable JSON ledger. This is audit-only: do not strengthen survivors. Preserve all existing worktree changes. The supplied mutation-audit.json is historical example evidence, not evidence of this run; create a fresh ledger for the campaign.",
+      "expected_output": "A sequential, complete per-test mutation campaign with an established baseline, stable inventory, production-only mutations, exact focused failure/pass evidence, safe restoration, survivor reporting, and an independently validated JSON ledger.",
+      "files": [],
+      "expectations": [
+        "The workflow establishes a passing untouched baseline and complete active-test inventory before the first mutation.",
+        "Each mutation trial uses a fresh subagent and mutation workers are run sequentially in the shared checkout.",
+        "A test is classified killed only after an intended focused failure, proven restoration, and passing clean focused rerun.",
+        "The ledger preserves invalid and survivor attempts and is updated after every trial.",
+        "The workflow does not edit tests to harden survivors because the prompt specifies audit-only mode.",
+        "Completion requires every inventoried active test to have a terminal status, a passing final suite, and proven restoration of the pre-campaign state."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "dirty-worktree-regex-selector-and-resume",
+      "prompt": "Resume the mutation audit described by ./tmp/payment-suite-mutation-audit.json. The repository already has unrelated user edits. Continue only the pending tests in test/payment.test.ts; one test is named `should preserve r+ mode when reopening`. Use a new worker for each loop. The previous run was interrupted while one entry was marked running. Do not discard or stash anything.",
+      "expected_output": "An interruption-safe resumption that audits the running entry for residual mutation state, preserves unrelated edits, proves an exact selector for the regex-like name, and continues sequentially without duplicating completed ledger records.",
+      "files": [],
+      "expectations": [
+        "The workflow investigates the running attempt and verifies or restores its mutation before starting new trials.",
+        "Existing completed ledger entries are preserved and only pending or safely recovered targets are processed.",
+        "The exact selector escapes or otherwise treats the plus sign literally and proves exactly one test was selected.",
+        "Restoration is checked against the pre-existing scoped diff rather than against an assumed clean worktree.",
+        "The workflow does not use reset, checkout, clean, or stash to restore files."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "multi-runtime-blocked-and-survivor-hardening",
+      "prompt": "Audit the shared FileSystem conformance suite through both its Node and Deno entrypoints. Use one fresh subagent per runtime/test target. Deno may not be installed. Record the audit in filesystem-test-mutation-audit.json. If a test survives, explain the missing observation and strengthen it with deterministic behavior before re-auditing it; avoid sleep-based or negative-timeout assertions.",
+      "expected_output": "A runtime-aware mutation ledger that does not misclassify unavailable Deno execution, keeps Node and Deno targets distinct, preserves survivor history, and uses a fresh trial to verify any authorized deterministic test strengthening.",
+      "files": [],
+      "expectations": [
+        "Node and Deno executions are inventoried as distinct targets where runtime behavior can differ.",
+        "An unavailable Deno runner is classified blocked and is never reported as passed, survived, or killed.",
+        "The workflow records an initial survivor before making an authorized focused test improvement.",
+        "Survivor hardening prefers deterministic positive observation over sleeps or negative timeout listeners.",
+        "The strengthened test receives a new fresh-worker mutation attempt and the original survivor remains in history.",
+        "The final report distinguishes verified results from blocked runtime coverage and does not claim full cross-runtime completion."
+      ]
+    }
+  ]
+}

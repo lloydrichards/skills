@@ -266,6 +266,30 @@
       "prerequisites": [
         "Platform-specific engine 0.1.5 installed separately; browser/image tools as needed"
       ]
+    },
+    "make-pr": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/make-pr"
+      },
+      "dependencies": [
+        "changeset",
+        "technical-writing",
+        "unslop"
+      ],
+      "prerequisites": [
+        "Externally managed but skill and authenticated GitButler CLI; install and configure separately"
+      ]
+    },
+    "mutation-test-loop": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/mutation-test-loop"
+      },
+      "dependencies": [],
+      "prerequisites": [
+        "Fresh subagent delegation and the target project test runner; behavioral-test-refactoring is optional for broad suite redesign"
+      ]
     }
   },
   "profiles": {
@@ -303,10 +327,14 @@
       "improve-codebase-architecture"
     ],
     "releases": [
-      "changeset"
+      "changeset",
+      "make-pr"
     ],
     "llm": [
       "prompt-engineering-patterns"
+    ],
+    "mutation-audits": [
+      "mutation-test-loop"
     ]
   },
   "external": {
@@ -318,14 +346,6 @@
     }
   },
   "candidates": {
-    "make-pr": {
-      "installable": false,
-      "reason": "Owner-confirmed custom skill; managed inclusion is tracked separately in PR #2"
-    },
-    "mutation-test-loop": {
-      "installable": false,
-      "reason": "Owner-confirmed custom skill; managed inclusion is tracked separately in PR #2"
-    },
     "skill-creator": {
       "installable": false,
       "reason": "Locally modified third-party fork deferred pending an explicit maintenance decision; preserved separately."

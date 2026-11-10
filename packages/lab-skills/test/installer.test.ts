@@ -370,6 +370,20 @@ describe('lab-skills filesystem contract, no upstream network', () => {
       successful(yield* f.run('apply', '--target', 'agents'))
       successful(yield* f.run('status', '--target', 'agents'))
     }))
+  test('owner-confirmed workflow names can be managed after leaving candidates', () =>
+    Effect.gen(function* () {
+      const f = yield* fixture
+      const app = f.manifest.skills.app
+      if (!app) throw new Error('fixture')
+      Reflect.deleteProperty(f.manifest.candidates, 'make-pr')
+      for (const name of ['make-pr', 'mutation-test-loop'])
+        f.manifest.skills[name] = { ...app, dependencies: ['app'] }
+      yield* f.save()
+      successful(yield* f.run('validate'))
+      successful(yield* f.run('apply', '--target', 'agents', '--skill', 'make-pr', '--skill', 'mutation-test-loop'))
+      for (const name of ['app', 'make-pr', 'mutation-test-loop'])
+        assert.equal(yield* io(() => fs.readFile(join(f.home, '.agents/skills', name, 'SKILL.md'), 'utf8')), md('app'))
+    }))
   test('candidates, external entries and blocked skills cannot be selected', () =>
     Effect.gen(function* () {
       const f = yield* fixture
