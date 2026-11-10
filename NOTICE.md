@@ -49,3 +49,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## Shared-skills migration additions
+
+Third-party licenses override the collection MIT license for their original material. This proposal does not relicense third-party code. Existing embedded and vendored notices are retained. Additional upstream root notices are retained under `licenses/<skill>/` and copied into maintained skill folders as `UPSTREAM-*`. Manifest-only sources carry their upstream root notices into generated installations.
+
+Maintained adaptations and metadata overlays:
+
+- `deslop`: millionco/react-doctor, comparison baseline f1913f27f5b0ae895119dc9b73102bdebc7bbc14. Local rewrite and added guidance.
+- `unslop`: backnotprop/pstack, comparison baseline 55bfdc262dd7f99254d19b53a96cf1dfb24c213b. Local terminology examples.
+- `engineering-principles`: backnotprop/pstack, explicitly recorded revision 157aae39a733135e93d8b5b19ff62c6a84b0ad56. Custom wrapper, repackaged references and relative-link adjustments. See LICENSE.upstream.
+- `install-anti-slop`: dmmulroy/anti-slop, comparison baseline d2a9aea3b896ffcb291a85f2c1301aa2543ad8c8. Modified spacing rules and vendored adapter. Nested ESLint Stylistic licenses and UPSTREAM.md remain applicable.
+- `skill-creator`: anthropics/skills, comparison baseline b9e19e6f44773509fbdd7001d77ff41a49a486c1. HTML preview changes and Codex metadata. Its LICENSE.txt remains authoritative.
+- `skill-doctor`: warpdotdev/common-skills, comparison baseline 7c4eb852de8d7c3e68c81802e1c59db9a611f914. Codex turn-counting fix, report changes and tests.
+- `rubber-duck`: elliotjlt/claude-skill-potions, comparison baseline 7050028afe96e28071548b9e85265cce030cb8c8. Added Codex metadata.
+
+Exact upstream paths, immutable commits, file hashes, executable flags and baseline qualifications for manifest-only installations are in sources.lock.json. A comparison baseline is not proof of an original installation revision. Candidate snapshots are outside this public source tree and receive no new ownership or license claim here.

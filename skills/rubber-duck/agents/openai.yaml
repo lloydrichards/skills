@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rubber Duck"
+  short_description: "Clarify a problem before solving it"
+  default_prompt: "Use $rubber-duck to help me work through this problem."

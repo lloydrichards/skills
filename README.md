@@ -1,9 +1,13 @@
-# Skills
+# Shared skills and lab-skills
 
-This is a collection of skills I use with AI coding tools.
+This repository keeps editable custom skills, maintained adaptations and pinned public-skill sources alongside `lab-skills`. lab-skills is an Effect-based installer. It does not change Git or GitButler state, configure harnesses, install prerequisite CLIs, or authenticate providers.
 
-I publish them for transparency and to make it easier to research how I use AI. I'm regularly hacking away on different skills to try improve my process so don't be surprised if things seem half baked at times.
+Authored skills remain in `skills/`. `manifest.json` selects sources, dependencies, variants and profiles. `sources.lock.json` pins public source commits, subdirectories and file hashes with accurate comparison-baseline qualifications. `NOTICE.md` and `licenses/` retain attribution and upstream licenses.
 
-## License
+CLI source, package bin launcher and tests are in `packages/lab-skills/`. It runs built JavaScript under Node or Bun using the same core. Generated dist/, node_modules/, installations, machine configuration, histories, credentials, engines and caches do not belong in public source. Machine-local installations and review snapshots stay outside the public source tree.
 
-Unless otherwise noted, this collection is available under the [MIT License](LICENSE). Third-party notices are in [NOTICE.md](NOTICE.md).
+Read [the public contract](docs/contract.md), [build and PATH instructions](docs/install.md), [command reference](docs/reference.md), [manual recovery](docs/recovery.md), [source synchronization](docs/sync.md) and [open migration decisions](docs/decisions.md).
+
+`make-pr` and `mutation-test-loop` are excluded pending ownership review; their migration snapshots are preserved separately. `but` and Rex remain externally managed. code-review is pinned but blocked pending its tracker prerequisite. The optional skill-creator profile still needs a Codex collision decision. Impeccable source variants are pinned, but platform engines must be obtained separately.
+
+Start with `npm ci --ignore-scripts`, `npm run build`, and `node packages/lab-skills/bin/lab-skills.mjs validate`. Review `plan` before any `apply`; existing installations are not adopted automatically.

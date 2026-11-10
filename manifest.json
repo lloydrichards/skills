@@ -1,0 +1,384 @@
+{
+  "schema": 1,
+  "owner": "lloydrichards/shared-skills",
+  "skills": {
+    "behavioral-test-refactoring": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/behavioral-test-refactoring"
+      },
+      "dependencies": []
+    },
+    "changeset": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/changeset"
+      },
+      "dependencies": []
+    },
+    "comment-auditor": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/comment-auditor"
+      },
+      "dependencies": []
+    },
+    "effect": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/effect"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "kitlangton/skills",
+        "sha": "22c35cb7fd29f931789253fc3c8eb142f2863a8a",
+        "path": "skills/effect",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "explain-diff": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/explain-diff"
+      },
+      "dependencies": [
+        "report-builder"
+      ]
+    },
+    "gauntlet-loop": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/gauntlet-loop"
+      },
+      "dependencies": []
+    },
+    "learn": {
+      "ownership": "custom-redesign",
+      "source": {
+        "local": "skills/learn"
+      },
+      "dependencies": [
+        "report-builder"
+      ]
+    },
+    "report-builder": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/report-builder"
+      },
+      "dependencies": []
+    },
+    "deslop": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/deslop"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "millionco/react-doctor",
+        "sha": "f1913f27f5b0ae895119dc9b73102bdebc7bbc14",
+        "path": ".agents/skills/deslop",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "unslop": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/unslop"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "backnotprop/pstack",
+        "sha": "55bfdc262dd7f99254d19b53a96cf1dfb24c213b",
+        "path": "skills/unslop",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "engineering-principles": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/engineering-principles"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "backnotprop/pstack",
+        "sha": "157aae39a733135e93d8b5b19ff62c6a84b0ad56",
+        "path": "skills",
+        "basis": "explicit reference provenance; custom wrapper and rewritten relative links"
+      }
+    },
+    "install-anti-slop": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/install-anti-slop"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "dmmulroy/anti-slop",
+        "sha": "d2a9aea3b896ffcb291a85f2c1301aa2543ad8c8",
+        "path": "skills/install-anti-slop",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "skill-creator": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/skill-creator"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "anthropics/skills",
+        "sha": "b9e19e6f44773509fbdd7001d77ff41a49a486c1",
+        "path": "skills/skill-creator",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "skill-doctor": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/skill-doctor"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "warpdotdev/common-skills",
+        "sha": "7c4eb852de8d7c3e68c81802e1c59db9a611f914",
+        "path": ".agents/skills/skill-doctor",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "rubber-duck": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/rubber-duck"
+      },
+      "dependencies": [],
+      "provenance": {
+        "repo": "elliotjlt/claude-skill-potions",
+        "sha": "7050028afe96e28071548b9e85265cce030cb8c8",
+        "path": "skills/rubber-duck",
+        "basis": "last path commit before recorded update"
+      }
+    },
+    "improve-codebase-architecture": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "improve-codebase-architecture"
+      },
+      "dependencies": [],
+      "prerequisites": [
+        "Delegation tools; optional codebase-design skill is not included"
+      ]
+    },
+    "prompt-engineering-patterns": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "prompt-engineering-patterns"
+      },
+      "dependencies": []
+    },
+    "arena": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "arena"
+      },
+      "dependencies": [
+        "engineering-principles"
+      ]
+    },
+    "bro": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "bro"
+      },
+      "dependencies": []
+    },
+    "how": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "how"
+      },
+      "dependencies": []
+    },
+    "blast-radius": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "blast-radius"
+      },
+      "dependencies": [
+        "unslop"
+      ]
+    },
+    "swarm": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "swarm"
+      },
+      "dependencies": []
+    },
+    "teach": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "teach"
+      },
+      "dependencies": [
+        "how",
+        "why",
+        "unslop"
+      ]
+    },
+    "technical-writing": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "technical-writing"
+      },
+      "dependencies": [
+        "unslop"
+      ]
+    },
+    "why": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "why"
+      },
+      "dependencies": []
+    },
+    "grilling": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "grilling"
+      },
+      "dependencies": []
+    },
+    "handoff": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "handoff"
+      },
+      "dependencies": []
+    },
+    "research": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "research"
+      },
+      "dependencies": []
+    },
+    "retro": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "retro"
+      },
+      "dependencies": []
+    },
+    "show-me": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "show-me"
+      },
+      "dependencies": []
+    },
+    "code-review": {
+      "ownership": "third-party",
+      "source": {
+        "locked": "code-review"
+      },
+      "dependencies": [],
+      "prerequisites": [
+        "Project tracker document docs/agents/issue-tracker.md and compatible delegation tools"
+      ],
+      "blocked_reason": "Tracker prerequisite has not been made portable; installation intentionally blocked"
+    },
+    "impeccable": {
+      "ownership": "third-party",
+      "variants": {
+        "agents": {
+          "locked": "impeccable-agents"
+        },
+        "codex": {
+          "locked": "impeccable-codex"
+        },
+        "claude": {
+          "locked": "impeccable-claude"
+        },
+        "opencode": {
+          "locked": "impeccable-opencode"
+        },
+        "pi": {
+          "locked": "impeccable-pi"
+        }
+      },
+      "dependencies": [],
+      "prerequisites": [
+        "Platform-specific engine 0.1.5 installed separately; browser/image tools as needed"
+      ]
+    }
+  },
+  "profiles": {
+    "default": [
+      "behavioral-test-refactoring",
+      "comment-auditor",
+      "deslop",
+      "unslop",
+      "technical-writing",
+      "explain-diff"
+    ],
+    "effect": [
+      "effect"
+    ],
+    "frontend": [
+      "impeccable"
+    ],
+    "learning": [
+      "learn"
+    ],
+    "explanations": [
+      "teach",
+      "show-me"
+    ],
+    "advanced": [
+      "gauntlet-loop",
+      "arena",
+      "swarm",
+      "blast-radius",
+      "engineering-principles",
+      "grilling",
+      "handoff",
+      "research",
+      "retro",
+      "improve-codebase-architecture"
+    ],
+    "releases": [
+      "changeset"
+    ],
+    "linting": [
+      "install-anti-slop"
+    ],
+    "llm": [
+      "prompt-engineering-patterns"
+    ],
+    "skill-maintenance": [
+      "skill-creator",
+      "skill-doctor",
+      "rubber-duck",
+      "bro"
+    ]
+  },
+  "external": {
+    "but": {
+      "reason": "Provenance and installed CLI version unresolved; managed outside this installer"
+    },
+    "rex": {
+      "reason": "CLI-provided skill stub; provenance and installed CLI version unresolved"
+    }
+  },
+  "candidates": {
+    "make-pr": {
+      "installable": false,
+      "reason": "Ownership confirmation pending"
+    },
+    "mutation-test-loop": {
+      "installable": false,
+      "reason": "Ownership confirmation pending; evaluation includes machine-specific checkout path"
+    }
+  }
+}

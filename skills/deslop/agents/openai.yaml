@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deslop"
+  short_description: "Simplify code without changing behavior"
+  default_prompt: "Use $deslop to simplify the code I just changed."

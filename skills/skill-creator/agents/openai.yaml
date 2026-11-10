@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Creator"
+  short_description: "Create, improve, and evaluate agent skills"
+  default_prompt: "Use $skill-creator to create a skill for this workflow."
