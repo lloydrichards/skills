@@ -1,6 +1,7 @@
 import { Data, Effect } from "effect";
 import { Prompt } from "effect/cli";
 import { Ansi, Box, Cmd } from "effect-boxes";
+import { renderHuman } from "../output.js";
 import { Targets, type Diagnostic, type Entry, type Target } from "../model.js";
 import {
   canInstall,
@@ -186,6 +187,22 @@ export const renderLive = (
   width: number,
   rows = 23,
 ): Box.Box<Ansi.AnsiStyle> => {
+  if (
+    state.page === "review" &&
+    state.mode !== "help" &&
+    !inspectionRows(model).length
+  ) {
+    return Box.vcat(
+      [
+        renderHuman(model.result, width).stdout,
+        blank,
+        line("Enter Installed skills   Esc Scope   ? Help", width, Ansi.dim),
+        line("r Refresh   t Targets   q Quit", width, Ansi.dim),
+        line(`${model.result.command} · read only`, width, Ansi.dim),
+      ],
+      Box.left,
+    );
+  }
   const size = dimensions(width, rows);
   let title: string;
   let body: Box.Box<Ansi.AnsiStyle>;
@@ -483,6 +500,8 @@ export const navigateLive = (
           ? model.result.command
           : "plan",
       );
+    if (enter && !inspectionRows(model).length && model.result.ok)
+      return command("status");
     if (enter && canInstall(model.result))
       return next({ page: "confirm", offset: 0, authorize: false });
   }

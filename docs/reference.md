@@ -18,6 +18,8 @@ Default resolves to seven skills. Add profile effect for eight. Profiles fronten
 
 `status` and `plan` share an assessment and write no files, create no directories, acquire no locks and fetch no payloads. Offline plans cannot certify network availability. The supported launcher also prevents Bun's default runtime transpiler cache. User-enabled runtime profilers, Node compile caches and external monitoring tools are outside this filesystem guarantee; disable those when auditing read-only behavior.
 
+Human output uses borderless tables with Status, Skill, and Location columns. Full paths wrap within their cells. `status` includes current, unselected, and unmanaged entries. `plan` shows changes and conflicts, while `apply` lists installed entries or reports a no-op. `doctor` shows findings rather than normal inventory rows. Use `--json` for full source identities and exact structured records. Color follows each stream's terminal status and is disabled by non-empty `NO_COLOR` or `TERM=dumb`.
+
 JSON output goes to stdout, including failures. Human errors go to stderr. An available update is exit 0; an operational failure is exit 1; invalid input/source is exit 2; installation conflicts and interrupted operations are exit 3. No force, adoption, removal, Git synchronization or permission/authentication command exists.
 
 Installed copies normalize files to 0644 or 0755 based on the source executable flag, and directories to 0755. Ownership records then track full POSIX permission modes as well as content and directory membership. Later permission changes are conflicts.

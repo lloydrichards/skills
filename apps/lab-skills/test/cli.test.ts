@@ -318,7 +318,9 @@ await import(${JSON.stringify(pathToFileURL(launcher).href)});
       );
       assert.strictEqual(output.code, 0, output.stderr + output.stdout);
       assert.strictEqual(output.stderr, "");
-      assert.strictEqual(output.stdout.trim(), "lab-skills validate: ok");
+      assert.include(output.stdout, "Source definitions are valid");
+      assert.include(output.stdout, checkout);
+      assert.notInclude(output.stdout, "\u001b");
       assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
     }),
   );
