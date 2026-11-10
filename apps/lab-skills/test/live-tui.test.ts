@@ -26,7 +26,7 @@ import type { Flags } from "../src/config.js";
 const io = <A>(f: () => Promise<A>) => Effect.tryPromise(f);
 const fixture = Effect.gen(function* () {
   const base = yield* Effect.acquireRelease(
-    io(() => fs.mkdtemp(join(tmpdir(), "lab-tui-"))),
+    io(async () => fs.mkdtemp(join(await fs.realpath(tmpdir()), "lab-tui-"))),
     (base) =>
       io(() => fs.rm(base, { recursive: true, force: true })).pipe(
         Effect.orDie,
