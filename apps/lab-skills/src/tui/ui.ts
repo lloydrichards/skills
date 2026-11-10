@@ -13,7 +13,11 @@ export const clean = (value: string) =>
 /** JSON notation keeps whitespace in paths unambiguous, including at wrapped line endings. */
 export const literalValue = (value: string) =>
   /[\s"\\]/u.test(value) || clean(value) !== value
-    ? clean(JSON.stringify(value)).replace(/ /g, "\\u0020")
+    ? clean(JSON.stringify(value)).replace(
+        /\s/g,
+        (character) =>
+          `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`,
+      )
     : value;
 
 /** Wrap metadata by terminal cells without Markdown's whitespace normalization. */

@@ -7,6 +7,8 @@ describe("Literal metadata", () => {
   it("represents whitespace and controls reversibly without terminal control bytes", () => {
     for (const path of [
       "/tmp/two  spaces",
+      "/tmp/two\u00a0\u00a0spaces",
+      "/tmp/em\u2003space",
       "/tmp/tab\tname",
       "/tmp/\u001b[2J",
       "/tmp/end ",
