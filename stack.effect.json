@@ -1,0 +1,16 @@
+{
+  "name": "shared-skills",
+  "runtime": {
+    "_tag": "bun"
+  },
+  "typescript": "7",
+  "lint": "oxlint",
+  "format": "oxfmt",
+  "test": "vitest",
+  "monorepo": "turbo",
+  "catalogs": [
+    {
+      "name": "official"
+    }
+  ]
+}

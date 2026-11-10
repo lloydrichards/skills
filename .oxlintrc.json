@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
+  "extends": [
+    "./node_modules/@effect/tsgo/oxlint-presets/recommended.json",
+    "./node_modules/@effect/tsgo/oxlint-presets/effect-native.json"
+  ],
+  "options": {
+    "denyWarnings": true
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/test/**/*.mjs"],
+      "rules": {
+        "effecttsgo/async-function": "off",
+        "effecttsgo/node-builtin-import": "off",
+        "effecttsgo/prefer-schema-over-json": "off",
+        "effecttsgo/new-promise": "off",
+        "effecttsgo/process-env": "off",
+        "effecttsgo/global-console": "off",
+        "effecttsgo/any-unknown-in-error-context": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/lab-skills/src/adapters/disk.ts",
+        "apps/lab-skills/src/adapters/archives.ts",
+        "apps/lab-skills/src/adapters/inspection.ts",
+        "apps/lab-skills/src/source-inspection.ts"
+      ],
+      "rules": {
+        "effecttsgo/async-function": "off",
+        "effecttsgo/node-builtin-import": "off",
+        "effecttsgo/new-promise": "off",
+        "effecttsgo/process-env": "off"
+      }
+    },
+    {
+      "files": ["apps/lab-skills/bin/*.mjs"],
+      "rules": {
+        "effecttsgo/node-builtin-import": "off",
+        "effecttsgo/process-env": "off",
+        "effecttsgo/global-console": "off"
+      }
+    }
+  ]
+}
