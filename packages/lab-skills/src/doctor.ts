@@ -82,6 +82,7 @@ export const doctor = Effect.fn('Doctor.inspect')(function* (
         }
         resolved = linked.success
       }
+      if ((yield* disk.info(resolved))?.kind !== 'directory') continue
       const skillFile = path.join(resolved, 'SKILL.md'),
         info = yield* disk.info(skillFile)
       if (info?.kind === 'link') {

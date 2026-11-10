@@ -564,6 +564,18 @@ describe('lab-skills filesystem contract, no upstream network', () => {
       assert.isUndefined(yield* disk.info(f.baseFile))
       assert.isUndefined(yield* disk.info(paths(f.home).lock))
     }))
+  test('doctor ignores ordinary files and links to files in discovery roots without writes', () =>
+    Effect.gen(function* () {
+      const f = yield* fixture
+      for (const root of ['.agents/skills', '.codex/skills', '.codex/skills/.system', '.claude/skills', '.config/opencode/skills', '.pi/agent/skills']) {
+        const file = join(f.home, root, '.DS_Store')
+        yield* write(file, 'ordinary discovery-root file')
+        yield* io(() => fs.symlink(file, join(f.home, root, 'file-link')))
+      }
+      const before = yield* snapshot(f.home)
+      successful(yield* f.run('doctor'))
+      assert.strictEqual(yield* snapshot(f.home), before)
+    }))
   test('doctor reports duplicates, broken links, stage evidence and missing prerequisites without writes', () =>
     Effect.gen(function* () {
       const f = yield* fixture
