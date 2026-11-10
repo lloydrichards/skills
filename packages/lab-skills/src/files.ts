@@ -183,3 +183,44 @@ export const physicalPath = Effect.fn('Files.physicalPath')(function* (file: str
   }
   return path.join(yield* disk.realPath(ancestor), ...missing)
 })
+
+// Keep repository-wide notices once in authored source, and bundle hashed
+// copies only in generated installations. They participate in normal updates.
+export const bundleLocalNotices = Effect.fn('Files.bundleLocalNotices')(function* (
+  root: string,
+  tree: Tree,
+) {
+  const disk = yield* Disk,
+    path = yield* Path.Path,
+    hash = yield* Hashing
+  const files = { ...tree.files }
+  const sources: Record<string, string> = {}
+  for (const [original, destination] of [
+    ['LICENSE', 'COLLECTION-LICENSE.txt'],
+    ['NOTICE.md', 'COLLECTION-NOTICE.md'],
+  ] as const) {
+    const file = path.join(root, original)
+    const info = yield* disk.info(file)
+    if (!info) continue
+    yield* noLinks(file).pipe(
+      Effect.mapError((error) => problem('SOURCE_INVALID', error.message, 2, file)),
+    )
+    if (info.kind !== 'file')
+      return yield* Effect.fail(
+        problem('SOURCE_INVALID', 'Collection notice must be an ordinary file', 2, file),
+      )
+    if (Object.hasOwn(files, destination))
+      return yield* Effect.fail(
+        problem(
+          'SOURCE_INVALID',
+          'Source file collides with a generated collection notice',
+          2,
+          destination,
+        ),
+      )
+    const data = yield* disk.read(file)
+    files[destination] = { sha256: yield* hash.sha256(data), executable: false, mode: 0o644 }
+    sources[destination] = file
+  }
+  return { tree: { ...tree, files }, sources }
+})

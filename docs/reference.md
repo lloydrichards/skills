@@ -12,7 +12,7 @@ The authoritative public contract, versioned schemas, selection rules, diagnosti
 
 agents means `.agents/skills` under the target home. Other targets are codex `.codex/skills`, claude `.claude/skills`, opencode `.config/opencode/skills`, and pi `.pi/agent/skills`. Every selected root receives copies and the full dependency closure. Impeccable selects a distinct upstream variant where appropriate. Runtime discovery and permission configuration remain harness responsibilities. Avoid duplicate discovery roots until precedence is verified on that machine.
 
-Default resolves to seven skills. Add profile effect for eight. Profiles frontend, learning, explanations, advanced, releases, linting, llm and skill-maintenance remain optional. Explicit profiles replace the implicit default; use both `--profile default` and `--profile effect` to combine them. `--harness` remains an alias for `--target`.
+Default resolves to seven skills. Add profile effect for eight. Profiles frontend, learning, explanations, advanced, releases and llm remain optional. Explicit profiles replace the implicit default; use both `--profile default` and `--profile effect` to combine them. `--harness` remains an alias for `--target`.
 
 `status` and `plan` share an assessment and write no files, create no directories, acquire no locks and fetch no payloads. Offline plans cannot certify network availability. The supported launcher also prevents Bun's default runtime transpiler cache. User-enabled runtime profilers, Node compile caches and external monitoring tools are outside this filesystem guarantee; disable those when auditing read-only behavior.
 
@@ -21,3 +21,5 @@ JSON output goes to stdout, including failures. Human errors go to stderr. An av
 Installed copies normalize files to 0644 or 0755 based on the source executable flag, and directories to 0755. Ownership records then track full POSIX permission modes as well as content and directory membership. Later permission changes are conflicts.
 
 Git inspection does not invoke git status, clean/process filters, fsmonitor hooks or remote fetching. It compares local tree/index objects and raw worktree bytes. This can conservatively mark transformed files or submodules dirty; installation updates remain governed by content and pin identities.
+
+Local generated copies include COLLECTION-LICENSE.txt and COLLECTION-NOTICE.md from the repository root when present. These files are hashed, ownership-checked and updated like other payload files. They are not duplicated in authored skill directories; colliding authored files are rejected.

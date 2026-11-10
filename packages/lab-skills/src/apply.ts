@@ -16,8 +16,10 @@ const fetchPayload = Effect.fn('Apply.fetchPayload')(function* (
     hash = yield* Hashing
   const payload: Record<string, Uint8Array> = {}
   if (job.local) {
-    for (const file of Object.keys(job.tree.files))
-      payload[file] = yield* disk.read(path.join(job.local, file))
+    for (const file of Object.keys(job.tree.files)) {
+      const notice = job.notices && Object.hasOwn(job.notices, file) ? job.notices[file] : undefined
+      payload[file] = yield* disk.read(notice ?? path.join(job.local, file))
+    }
   } else if ('locked' in job.payload) {
     const source = catalog.lock.sources[job.payload.locked]
     if (!source) return yield* Effect.fail(problem('MANIFEST_INVALID', 'Missing source lock', 2))

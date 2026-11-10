@@ -183,8 +183,6 @@ export const doctor = Effect.fn('Doctor.inspect')(function* (
     }
   }
   const knownExecutables: Record<string, string[]> = {
-    'skill-creator': ['python3', 'claude'],
-    'skill-doctor': ['python3'],
     'technical-writing': [],
     why: ['git', 'gh'],
   }
@@ -206,12 +204,6 @@ export const doctor = Effect.fn('Doctor.inspect')(function* (
         code: 'PREREQUISITE_UNVERIFIED',
         severity: 'warning',
         message: `${name}: ${prerequisite}`,
-      })
-    if (name === 'skill-creator' && job.id.startsWith('codex/'))
-      diagnostics.push({
-        code: 'DUPLICATE_NAME',
-        severity: 'warning',
-        message: 'skill-creator has a known collision with the Codex system skill',
       })
     if (name === 'impeccable') {
       const engine = path.join(options.home, '.impeccable/bin/0.1.5/impeccable')
