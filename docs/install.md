@@ -2,28 +2,40 @@
 
 Keep this tree in the editable lloydrichards/skills checkout. Do not run `npm install -g` on a copied package: that would create another source location. The package is private and its bin entry points at the checkout launcher. A resolved owning root inside node_modules is rejected, including copied global npm installations. Dependencies and build output are generated locally and are not included in the source archive.
 
-Use Node 22.12+, Node 24+, or Node 26+. The optional Bun execution path was tested with Bun 1.4.0. From the owning checkout:
+Use Bun 1.4.2 for development. The built CLI runs under Node 22.12+, Node 24+, or Node 26+, and Bun. From the owning checkout:
 
 ```sh
-npm ci --ignore-scripts
-npm run check
-npm test
-npm run build
-node packages/lab-skills/bin/lab-skills.mjs validate
+bun install --frozen-lockfile
+bun run format:check
+bun run check
+bun run lint
+bun run test
+bun run build
+node apps/lab-skills/bin/lab-skills.mjs validate
 ```
 
-Bun is optional. Node execution does not require a Bun executable. To test Bun explicitly:
+After the build, Node execution does not require a Bun executable. To test Bun execution explicitly:
 
 ```sh
-npm run test:bun
-bun packages/lab-skills/bin/lab-skills.mjs validate
+bun run test:bun
+bun apps/lab-skills/bin/lab-skills.mjs validate
 ```
+
+The previous `packages/lab-skills/bin/lab-skills.mjs` path is a compatibility launcher that imports the new launcher, so existing PATH links continue to resolve the owning checkout. New links use `apps/lab-skills/bin/lab-skills.mjs`.
+
+The install runs `prepare` to patch TypeScript and Oxlint with Effect TSGo. If you install with `--ignore-scripts`, run `bun run prepare` before checks. `bun run check` and `bun run type-check` check application and test types. `bun run lint` enforces the configured Effect diagnostics.
+
+Native filesystem adapters retain POSIX file identity, exclusive creation, atomic replacement, and Git plumbing. Their lint exceptions are scoped to those adapters. Tests and the dependency-free launcher have separate exceptions; production workflows retain the Effect rules.
+
+Stack Effect setup is recorded in `stack.effect.json`. `bun run stack:schema` and `bun run stack:plan` use CLI version 0.18.1. The generated CLI starter was adapted to `apps/lab-skills` and NodeNext output for execution under both runtimes. Future generated starter files need review before they replace these application-specific choices.
+
+Use the workspace TypeScript version in your editor. The checked-in VS Code settings enable native TSGo and point at `node_modules/typescript/bin`. Other editors must use the Effect TSGo language server as their TypeScript server.
 
 The test suite uses temporary homes. Network payload cases in that suite use an injected HTTP service and a tar fixture. The optional integration check makes real pinned upstream downloads, installs default plus Effect into temporary homes, checks repeat application and status, then removes those homes:
 
 ```sh
-node packages/lab-skills/test/real-upstream.mjs node
-node packages/lab-skills/test/real-upstream.mjs bun
+node apps/lab-skills/test/real-upstream.mjs node
+node apps/lab-skills/test/real-upstream.mjs bun
 ```
 
 Expose the checkout on PATH later, after review. Run these commands only after choosing the permanent source checkout:
@@ -31,7 +43,7 @@ Expose the checkout on PATH later, after review. Run these commands only after c
 ```sh
 skills_checkout=$(pwd -P)
 mkdir -p "$HOME/.local/bin"
-ln -s "$skills_checkout/packages/lab-skills/bin/lab-skills.mjs" "$HOME/.local/bin/lab-skills"
+ln -s "$skills_checkout/apps/lab-skills/bin/lab-skills.mjs" "$HOME/.local/bin/lab-skills"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 

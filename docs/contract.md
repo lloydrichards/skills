@@ -1,6 +1,6 @@
 # lab-skills public contract, version 1
 
-This contract precedes the Effect implementation. Source lives in skills/, manifest.json and sources.lock.json. CLI source, launcher and tests live in packages/lab-skills/. Generated dist/ and node_modules/ are ignored. Machine state and copied installations are outside the source checkout.
+This contract precedes the Effect implementation. Source lives in skills/, manifest.json and sources.lock.json. CLI source, launcher and tests live in apps/lab-skills/. Generated dist/ and node_modules/ are ignored. Machine state and copied installations are outside the source checkout.
 
 ## Commands and selection
 
@@ -50,7 +50,7 @@ Use built ESM JavaScript. A small executable launcher resolves its own real path
 
 ## Manifest and result shapes
 
-The complete executable schemas are in `packages/lab-skills/src/model.ts`. Manifest schema 1 has these required root fields:
+The complete executable schemas are in `apps/lab-skills/src/model.ts`. Manifest schema 1 has these required root fields:
 
 ```json
 {
