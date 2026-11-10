@@ -1,6 +1,17 @@
 import { BunRuntime } from "@effect/platform-bun";
 import { NodeRuntime } from "@effect/platform-node";
-import { Cause, Config, Console, Effect, Exit, Runtime, Schema } from "effect";
+import {
+  Cause,
+  Config,
+  Console,
+  Effect,
+  Exit,
+  Runtime,
+  Schema,
+  Stdio,
+  Terminal,
+} from "effect";
+import { renderHuman, renderText } from "./output.js";
 import { help } from "./commands.js";
 import { program } from "./program.js";
 import { runtimeLayer } from "./runtime.js";
@@ -17,17 +28,19 @@ const present = Effect.fn("Output.present")(function* (
     yield* Console.log(output);
     return;
   }
-  yield* Console.log(
-    `lab-skills ${result.command}: ${result.ok ? "ok" : "needs attention"}`,
-  );
-  for (const entry of result.entries)
-    yield* Console.log(
-      `${entry.status.padEnd(11)} ${entry.id}  ${entry.path}${entry.reason ? "  " + entry.reason : ""}${entry.status === "update" ? "  " + (entry.installedSource?.content_sha256.slice(0, 12) ?? "unknown") + " -> " + (entry.source?.content_sha256.slice(0, 12) ?? "unknown") : ""}`,
-    );
-  for (const diagnostic of result.diagnostics)
-    yield* (diagnostic.severity === "error" ? Console.error : Console.log)(
-      `${diagnostic.code}: ${diagnostic.message}${diagnostic.path ? " [" + diagnostic.path + "]" : ""}`,
-    );
+  const stdio = yield* Stdio.Stdio;
+  const terminal = yield* Terminal.Terminal;
+  const stdoutTty = yield* stdio.stdoutIsTerminal;
+  const stderrTty = yield* stdio.stderrIsTerminal;
+  const noColor = yield* Config.String("NO_COLOR").pipe(Config.withDefault(""));
+  const term = yield* Config.String("TERM").pipe(Config.withDefault(""));
+  const colors = noColor.length === 0 && term !== "dumb";
+  const width =
+    stdoutTty || stderrTty ? Math.max(1, (yield* terminal.columns) - 1) : 80;
+  const output = renderHuman(result, width);
+  yield* Console.log(renderText(output.stdout, stdoutTty && colors));
+  if (output.stderr.rows)
+    yield* Console.error(renderText(output.stderr, stderrTty && colors));
 });
 
 const run = Effect.fn("Cli.run")(function* (
@@ -103,7 +116,9 @@ const run = Effect.fn("Cli.run")(function* (
         } satisfies Result),
     ),
   );
-  yield* present(result, argv.includes("--json"));
+  yield* present(result, argv.includes("--json")).pipe(
+    Effect.provide(runtimeLayer(envPath)),
+  );
   return result.exitCode;
 });
 
