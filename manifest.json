@@ -107,57 +107,12 @@
         "basis": "explicit reference provenance; custom wrapper and rewritten relative links"
       }
     },
-    "install-anti-slop": {
-      "ownership": "maintained-adaptation",
-      "source": {
-        "local": "skills/install-anti-slop"
-      },
-      "dependencies": [],
-      "provenance": {
-        "repo": "dmmulroy/anti-slop",
-        "sha": "d2a9aea3b896ffcb291a85f2c1301aa2543ad8c8",
-        "path": "skills/install-anti-slop",
-        "basis": "last path commit before recorded update"
-      }
-    },
-    "skill-creator": {
-      "ownership": "maintained-adaptation",
-      "source": {
-        "local": "skills/skill-creator"
-      },
-      "dependencies": [],
-      "provenance": {
-        "repo": "anthropics/skills",
-        "sha": "b9e19e6f44773509fbdd7001d77ff41a49a486c1",
-        "path": "skills/skill-creator",
-        "basis": "last path commit before recorded update"
-      }
-    },
-    "skill-doctor": {
-      "ownership": "maintained-adaptation",
-      "source": {
-        "local": "skills/skill-doctor"
-      },
-      "dependencies": [],
-      "provenance": {
-        "repo": "warpdotdev/common-skills",
-        "sha": "7c4eb852de8d7c3e68c81802e1c59db9a611f914",
-        "path": ".agents/skills/skill-doctor",
-        "basis": "last path commit before recorded update"
-      }
-    },
     "rubber-duck": {
-      "ownership": "maintained-adaptation",
+      "ownership": "third-party",
       "source": {
-        "local": "skills/rubber-duck"
+        "locked": "rubber-duck"
       },
-      "dependencies": [],
-      "provenance": {
-        "repo": "elliotjlt/claude-skill-potions",
-        "sha": "7050028afe96e28071548b9e85265cce030cb8c8",
-        "path": "skills/rubber-duck",
-        "basis": "last path commit before recorded update"
-      }
+      "dependencies": []
     },
     "improve-codebase-architecture": {
       "ownership": "third-party",
@@ -375,17 +330,8 @@
       "changeset",
       "make-pr"
     ],
-    "linting": [
-      "install-anti-slop"
-    ],
     "llm": [
       "prompt-engineering-patterns"
-    ],
-    "skill-maintenance": [
-      "skill-creator",
-      "skill-doctor",
-      "rubber-duck",
-      "bro"
     ],
     "mutation-audits": [
       "mutation-test-loop"
@@ -399,5 +345,18 @@
       "reason": "CLI-provided skill stub; provenance and installed CLI version unresolved"
     }
   },
-  "candidates": {}
+  "candidates": {
+    "skill-creator": {
+      "installable": false,
+      "reason": "Locally modified third-party fork deferred pending an explicit maintenance decision; preserved separately."
+    },
+    "skill-doctor": {
+      "installable": false,
+      "reason": "Locally modified third-party fork deferred pending an explicit maintenance decision; preserved separately."
+    },
+    "install-anti-slop": {
+      "installable": false,
+      "reason": "Locally modified third-party fork deferred pending an explicit maintenance decision; preserved separately."
+    }
+  }
 }

@@ -924,3 +924,50 @@ describe('adversarial safety regressions', () => {
       assert.isDefined(yield* disk.info(paths(f.home).journal))
     }))
 })
+
+describe('collection notice packaging', () => {
+  test('plan hashes root notices read-only and apply bundles them without source duplicates', () =>
+    Effect.gen(function* () {
+      const f = yield* fixture
+      yield* write(join(f.root, 'LICENSE'), 'collection license')
+      yield* write(join(f.root, 'NOTICE.md'), 'upstream attribution')
+      yield* write(join(f.root, 'skills/app/toString'), 'ordinary authored file')
+      const before = yield* snapshot(f.base)
+      successful(yield* f.run('plan'))
+      assert.strictEqual(yield* snapshot(f.base), before)
+      successful(yield* f.run('apply', '--target', 'agents'))
+      assert.strictEqual(
+        yield* io(() => fs.readFile(join(dirname(f.appFile), 'COLLECTION-LICENSE.txt'), 'utf8')),
+        'collection license',
+      )
+      assert.strictEqual(
+        yield* io(() => fs.readFile(join(dirname(f.appFile), 'COLLECTION-NOTICE.md'), 'utf8')),
+        'upstream attribution',
+      )
+      assert.isUndefined(
+        yield* (yield* Disk).info(join(f.root, 'skills/app/COLLECTION-LICENSE.txt')),
+      )
+      assert.strictEqual(
+        yield* io(() => fs.readFile(join(dirname(f.appFile), 'toString'), 'utf8')),
+        'ordinary authored file',
+      )
+      yield* write(join(f.root, 'NOTICE.md'), 'updated attribution')
+      const planned = yield* f.run('plan')
+      successful(planned)
+      assert.isTrue(planned.entries.every((entry) => entry.status === 'update'))
+      successful(yield* f.run('apply', '--target', 'agents'))
+      assert.strictEqual(
+        yield* io(() => fs.readFile(join(dirname(f.appFile), 'COLLECTION-NOTICE.md'), 'utf8')),
+        'updated attribution',
+      )
+    }))
+  test('authored notice collisions are rejected without overwriting either file', () =>
+    Effect.gen(function* () {
+      const f = yield* fixture
+      yield* write(join(f.root, 'LICENSE'), 'root license')
+      yield* write(join(f.root, 'skills/app/COLLECTION-LICENSE.txt'), 'authored file')
+      const before = yield* snapshot(f.base)
+      code(yield* f.run('apply', '--target', 'agents'), 'SOURCE_INVALID', 2)
+      assert.strictEqual(yield* snapshot(f.base), before)
+    }))
+})

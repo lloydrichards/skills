@@ -90,3 +90,9 @@ A minimal successful plan result has this shape. Actual owned entries also inclu
 Ownership tree records contain files with sha256, executable and full numeric POSIX mode, sorted directory paths, directoryModes and rootMode. Source snapshots normalize installation modes; existing installation inventories retain the observed modes for conflict checks. The recovery journal schema 1 contains phase, previousState, nextState and items with destination, stage, backup, old and next records. No runtime action executes data read from the journal.
 
 Destination overlap checks resolve physical existing ancestors, including filesystem case aliases, without creating missing paths. License mappings can generate multiple locked destinations from one original, including originals inside the selected source subtree.
+
+## Maintained source boundary
+
+Keep the eight previously tracked skills and the deliberate deslop, unslop and engineering-principles adaptations in source. Large optional skill-creator, skill-doctor and install-anti-slop forks are deferred and cannot be selected. rubber-duck uses the immutable upstream source without the local metadata overlay. Optional third-party instructions remain manifest-only.
+
+For local sources, root LICENSE and NOTICE.md files, when present, become generated COLLECTION-LICENSE.txt and COLLECTION-NOTICE.md payload files. Their hashes participate in the desired content identity. Planning only reads these files. Apply bundles them into owned copies; the source folders do not carry duplicate collection notices. An authored file colliding with a generated notice is a source error. Required per-skill upstream licenses remain intact.

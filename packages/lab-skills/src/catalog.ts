@@ -1,7 +1,15 @@
 import { Effect, Path } from 'effect'
 import { Manifest, SourceLock, decode, Targets, type Source, type Selection } from './model.js'
 import { Disk } from './services.js'
-import { identifier, inventory, json, noLinks, relative, sourceTree } from './files.js'
+import {
+  identifier,
+  inventory,
+  json,
+  noLinks,
+  relative,
+  sourceTree,
+  bundleLocalNotices,
+} from './files.js'
 import { problem } from './error.js'
 
 export interface Catalog {
@@ -22,7 +30,7 @@ export const selection = (manifest: Manifest, requested: Selection, blocked = tr
       const skill = Object.hasOwn(manifest.skills, name) ? manifest.skills[name] : undefined
       if (!skill)
         return yield* Effect.fail(
-          problem('MANIFEST_INVALID', `${name} is unknown, external, or an ownership candidate`, 2),
+          problem('MANIFEST_INVALID', `${name} is unknown, externally managed, or deferred`, 2),
         )
       if (blocked && skill.blocked_reason)
         return yield* Effect.fail(problem('BLOCKED_SKILL', skill.blocked_reason, 2, name))
@@ -145,10 +153,11 @@ export const validate = Effect.fn('Catalog.validate')(function* (root: string) {
           problem('SOURCE_INVALID', 'Local skill source must be under skills/', 2, source.local),
         )
       const local = path.join(root, source.local)
-      const tree = yield* inventory(local, true).pipe(
+      const bundled = yield* inventory(local, true).pipe(
+        Effect.flatMap((tree) => bundleLocalNotices(root, tree)),
         Effect.mapError((e) => problem('SOURCE_INVALID', e.message, 2, e.path)),
       )
-      if (!tree.files['SKILL.md'])
+      if (!bundled.tree.files['SKILL.md'])
         return yield* Effect.fail(
           problem('SOURCE_INVALID', 'Local source lacks SKILL.md', 2, local),
         )

@@ -9,6 +9,7 @@ import {
   sourceTree,
   treeHash,
   physicalPath,
+  bundleLocalNotices,
 } from './files.js'
 import {
   roots,
@@ -34,6 +35,7 @@ export interface Job {
   readonly source: Identity
   readonly payload: Source
   readonly local?: string
+  readonly notices?: Readonly<Record<string, string>>
 }
 export const paths = (home: string) => ({
   state: home + '/.local/state/lab-skills/state.json',
@@ -223,10 +225,15 @@ export const plan = Effect.fn('Plan.compute')(function* (
         return yield* Effect.fail(
           problem('PATH_UNSAFE', 'Installation overlaps source checkout', 3, destination),
         )
-      let tree: Tree, source: Identity, local: string | undefined
+      let tree: Tree,
+        source: Identity,
+        local: string | undefined,
+        notices: Readonly<Record<string, string>> | undefined
       if ('local' in payload) {
         local = path.join(root, payload.local)
-        tree = yield* inventory(local, true)
+        const bundled = yield* bundleLocalNotices(root, yield* inventory(local, true))
+        tree = bundled.tree
+        notices = bundled.sources
         const git = yield* inspection.git(root, payload.local)
         source = {
           kind: 'local',
@@ -248,7 +255,15 @@ export const plan = Effect.fn('Plan.compute')(function* (
           revision_basis: upstream.revision_basis,
         }
       }
-      const job: Job = { id, destination, tree, source, payload, ...(local ? { local } : {}) }
+      const job: Job = {
+        id,
+        destination,
+        tree,
+        source,
+        payload,
+        ...(local ? { local } : {}),
+        ...(notices ? { notices } : {}),
+      }
       jobs.push(job)
       const old = state.installations[id]
       const checked = yield* Effect.gen(function* () {

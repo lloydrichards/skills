@@ -1588,6 +1588,25 @@
         "UPSTREAM-LICENSE": "LICENSE",
         "UPSTREAM-NOTICE.md": "NOTICE.md"
       }
+    },
+    "rubber-duck": {
+      "repository": "elliotjlt/claude-skill-potions",
+      "commit": "7050028afe96e28071548b9e85265cce030cb8c8",
+      "path": "skills/rubber-duck",
+      "revision_basis": "Instruction file byte-identical to this immutable comparison snapshot; historical installation revision unknown. Local Codex metadata intentionally omitted.",
+      "files": {
+        "SKILL.md": {
+          "sha256": "7a0cd53e89fe6840db73e8703ffa4cbb285d81e00ce11b4c5972be1efd60d82b",
+          "executable": false
+        },
+        "UPSTREAM-LICENSE": {
+          "sha256": "f0eb9fc49e45723fc77c7fd2a0eb35adbc011f51e24dcfc2e3398e2c34d126cf",
+          "executable": false
+        }
+      },
+      "license_files": {
+        "UPSTREAM-LICENSE": "LICENSE"
+      }
     }
   }
 }
