@@ -138,6 +138,7 @@ Guidance:
 - The same object should back both the production service tag and the test-control tag.
 - Production code depends only on the real service tag.
 - Tests use the test-control service for control and inspection.
+- In a repository that uses the optional module namespace style from `SERVICES_LAYERS.md`, the corresponding names may be `Interface`, `Service`, `TestInterface`, `TestService`, and `testLayer`. Do not mix that convention with domain-named tags in one module.
 - Use function-valued service members, including zero-argument operations, so `Effect.fn` fits naturally.
 - Use `Layer.succeed` for complete dead-simple static test implementations.
 - Use `Layer.mock` only for tiny local partial mocks where omitted members should fail loudly if used.

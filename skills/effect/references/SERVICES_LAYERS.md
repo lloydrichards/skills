@@ -58,6 +58,54 @@ Guidance:
 - Keep the service class focused on identity, construction, and production layers. Keep unrelated helpers and test implementations elsewhere.
 - Follow an established project-local module convention when it differs. Do not introduce barrels, TypeScript namespaces, or self-reexported module namespaces as a general Effect convention.
 
+## Optional Module Namespace Style
+
+Some applications organize each domain module around file-local role names and expose one canonical ES module namespace. This is a project convention, not an Effect requirement. Use it only when the repository already follows it or the task explicitly adopts it.
+
+```ts
+export interface Interface {
+  readonly get: (id: UserId) => Effect.Effect<User, NotFound | PersistenceError>
+}
+
+export class Service extends Context.Service<Service, Interface>()(
+  "@app/UserRepo",
+) {}
+
+export const layer = Layer.effect(
+  Service,
+  Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+
+    const get = Effect.fn("UserRepo.get")(function* (id: UserId) {
+      // ...
+    })
+
+    return Service.of({ get })
+  }),
+)
+
+export * as UserRepo from "./user-repo.js"
+```
+
+Consumers then use the domain namespace:
+
+```ts
+import { UserRepo } from "./user-repo.js"
+
+const program = Effect.gen(function* () {
+  const repo = yield* UserRepo.Service
+  return yield* repo.get(id)
+})
+```
+
+Guidance:
+
+- Keep one style consistent within a module boundary. Do not mechanically convert domain-named service classes to generic names.
+- A sibling imports the owning leaf directly; a folder or package barrel may relay the established identity with `export { UserRepo } from "./user-repo.js"`.
+- Export only intentional surface. Keep row codecs, helpers, and implementation details local.
+- Do not introduce TypeScript `namespace` declarations for organization.
+- The self-export creates the unusual runtime relation `UserRepo.UserRepo === UserRepo`. Use named exports or a separate barrel when the runtime, toolchain, or team conventions make that undesirable.
+
 ## Requirements: Intentional Versus Leaked
 
 Public service methods should normally have `R = never`. A database, logger, HTTP client, filesystem, or other implementation dependency leaking from a method forces callers to know how the service is built.
@@ -107,7 +155,33 @@ Collapse implementation failures only when callers genuinely apply the same poli
 
 See `ERROR_HANDLING.md` for error representation and `SCHEMA.md` for serializable error schemas.
 
-When an `Effect.fn(...)` wrapper applies to the whole invocation and needs the original arguments, pass a small transform after the generator. Good uses include error classification, tracing, retry, timeout, cleanup, and result mapping. Keep branch-local handling in the generator and avoid long transform pipelines.
+When an `Effect.fn(...)` wrapper applies to the whole invocation and needs the original arguments, pass a small transform after the generator. Each transform receives the effect and the original arguments.
+
+```ts
+const readAttachment = Effect.fn("Attachment.read")(
+  function* (ref: AttachmentRef) {
+    return yield* api.read(ref)
+  },
+  (effect, ref) =>
+    effect.pipe(
+      attachmentError("Attachment.read", { attachmentId: ref.id }),
+    ),
+)
+```
+
+Good whole-function transforms include error classification, localized recovery, logging annotations, spans, retry, timeout, ensuring cleanup, small local provisioning, and result mapping. Keep branch-local handling in the generator and avoid long transform pipelines.
+
+For boundary errors with operation labels, prefer a shared curried `mapError` helper over hand-writing wrappers in every module.
+
+```ts
+const persistenceError = operationError(PersistenceError.make)
+
+const row = yield* query.pipe(
+  persistenceError("UserStore.findById"),
+)
+```
+
+Name the helper after the error it produces. Keep operation labels or stable identifiers that aid diagnosis, and use `Effect.fn(...)` spans in addition to payload labels rather than instead of them.
 
 ## Test And Alternate Implementations
 
@@ -120,6 +194,8 @@ See `TESTING.md` for `Layer.mock`, reusable test services, and shared test layer
 Acquire clients, connections, and other owned resources during layer construction and tie their cleanup to the layer scope. Fork listeners, subscriptions, streams, and forever loops into that scope so layer acquisition can complete.
 
 See `RESOURCES_SCOPES.md` for acquisition/finalization and `STREAMS.md` for long-lived consumers, queues, pubsubs, and interruption.
+
+Use `Effect.forkScoped`, `FiberSet`, or `FiberMap` for scoped background work. Do not expose a public `start` method unless manual lifecycle control is part of the domain contract.
 
 ## Review Checklist
 

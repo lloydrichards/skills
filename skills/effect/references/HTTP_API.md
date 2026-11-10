@@ -33,7 +33,7 @@ export const Api = HttpApi.make("AppApi").add(
 Use schema-backed tagged errors for public failure contracts and declare them on the endpoint.
 
 ```ts
-export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
+export class UserNotFound extends Schema.TaggedError<UserNotFound>()(
   "UserNotFound",
   { id: Schema.String },
   { httpApiStatus: 404 },
