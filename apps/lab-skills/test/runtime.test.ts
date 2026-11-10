@@ -1,18 +1,12 @@
 import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 import fs from "node:fs/promises";
-import { realpathSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeDiskLayer } from "../src/runtime.js";
 import { Disk } from "../src/services.js";
+import { io, temporaryDirectory } from "./support.js";
 
-const io = <A>(f: () => Promise<A>) => Effect.tryPromise(f);
-const directory = Effect.acquireRelease(
-  io(() => fs.mkdtemp(join(realpathSync(tmpdir()), "lab-skills-runtime-"))),
-  (path) =>
-    io(() => fs.rm(path, { recursive: true, force: true })).pipe(Effect.orDie),
-);
+const directory = temporaryDirectory("lab-skills-runtime-");
 
 describe("real filesystem adapter failure boundaries", () => {
   it.live(

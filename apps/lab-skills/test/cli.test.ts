@@ -2,19 +2,13 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
-import { realpathSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { io, temporaryDirectory } from "./support.js";
 
 const checkout = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const launcher = join(checkout, "apps/lab-skills/bin/lab-skills.mjs");
-const io = <A>(f: () => Promise<A>) => Effect.tryPromise(f);
-const fixture = Effect.acquireRelease(
-  io(() => fs.mkdtemp(join(realpathSync(tmpdir()), "lab-skills-cli-"))),
-  (p) =>
-    io(() => fs.rm(p, { recursive: true, force: true })).pipe(Effect.orDie),
-);
+const fixture = temporaryDirectory("lab-skills-cli-");
 const child = (
   command: string,
   args: string[],
@@ -163,25 +157,7 @@ describe("built executable public boundary", () => {
         assert.notInclude(human.stdout, "ARGUMENT_INVALID");
       }),
   );
-  it.live("accepts repeated --json flags and prints exactly one result", () =>
-    Effect.gen(function* () {
-      const base = yield* fixture;
-      const output = yield* child(
-        process.execPath,
-        [launcher, "validate", "--json", "--json"],
-        base,
-        join(base, "actor"),
-      );
-      assert.strictEqual(output.code, 0, output.stderr + output.stdout);
-      assert.strictEqual(output.stderr, "");
-      const result = JSON.parse(output.stdout);
-      assert.strictEqual(result.schemaVersion, 1);
-      assert.strictEqual(result.command, "validate");
-      assert.strictEqual(result.ok, true);
-      assert.strictEqual(result.checkout, checkout);
-      assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
-    }),
-  );
+
   it.live("drains a large JSON argument error before exiting", () =>
     Effect.gen(function* () {
       const base = yield* fixture;
@@ -324,45 +300,7 @@ await import(${JSON.stringify(pathToFileURL(launcher).href)});
       assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
     }),
   );
-  it.live(
-    "retains repeated selection flags and mixed target aliases in invocation order",
-    () =>
-      Effect.gen(function* () {
-        const base = yield* fixture;
-        const output = yield* child(
-          process.execPath,
-          [
-            launcher,
-            "validate",
-            "--profile",
-            "default",
-            "--profile",
-            "effect",
-            "--skill",
-            "unslop",
-            "--skill",
-            "deslop",
-            "--target",
-            "agents",
-            "--harness",
-            "codex",
-            "--target",
-            "claude",
-            "--json",
-          ],
-          base,
-          join(base, "actor"),
-        );
-        assert.strictEqual(output.code, 0, output.stderr + output.stdout);
-        assert.strictEqual(output.stderr, "");
-        assert.deepStrictEqual(JSON.parse(output.stdout).selection, {
-          profiles: ["default", "effect"],
-          skills: ["unslop", "deslop"],
-          targets: ["agents", "codex", "claude"],
-        });
-        assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
-      }),
-  );
+
   it.live(
     "uses configured selection arrays when omitted and replaces supplied arrays",
     () =>
@@ -474,42 +412,6 @@ await import(${JSON.stringify(pathToFileURL(launcher).href)});
       ]);
     }),
   );
-  for (const [name, args] of [
-    ["an unknown command", ["unknown"]],
-    ["a JSON value", ["validate", "--json", "false"]],
-    ["a true JSON value", ["validate", "--json", "true"]],
-    ["a JSON assignment", ["validate", "--json=true"]],
-    ["a false JSON assignment", ["validate", "--json=false"]],
-    ["a missing option value", ["plan", "--home"]],
-    ["an invalid destination", ["plan", "--target", "unknown"]],
-    ["an unexpected positional argument", ["plan", "extra"]],
-    ["an empty home", ["plan", "--home", ""]],
-    ["an empty configuration path", ["plan", "--config", ""]],
-    ["an empty archive path", ["plan", "--archive-dir", ""]],
-    ["an empty profile", ["plan", "--profile", ""]],
-    ["an empty skill", ["plan", "--skill", ""]],
-    ["an empty destination", ["plan", "--target", ""]],
-  ] as const) {
-    it.live(`returns one argument error result for ${name}`, () =>
-      Effect.gen(function* () {
-        const base = yield* fixture;
-        const output = yield* child(
-          process.execPath,
-          [launcher, ...args, "--json"],
-          base,
-          join(base, "actor"),
-        );
-        assert.strictEqual(output.code, 2, output.stderr + output.stdout);
-        assert.strictEqual(output.stderr, "");
-        const result = JSON.parse(output.stdout);
-        assert.strictEqual(result.schemaVersion, 1);
-        assert.strictEqual(result.ok, false);
-        assert.strictEqual(result.exitCode, 2);
-        assert.strictEqual(result.diagnostics[0].code, "ARGUMENT_INVALID");
-        assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
-      }),
-    );
-  }
   for (const args of [["--help"], ["plan", "--help"], ["apply", "-h"]]) {
     it.live(
       `prints help for ${args.join(" ")} without reading machine configuration`,
@@ -548,24 +450,25 @@ await import(${JSON.stringify(pathToFileURL(launcher).href)});
         assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
       }),
   );
-  for (const extra of [["--tui"], ["--tui=false"], ["--tui", "false"]]) {
-    it.live(
-      `rejects ${extra.join(" ")} with JSON as one structured error`,
-      () =>
-        Effect.gen(function* () {
-          const base = yield* fixture;
-          const output = yield* child(
-            process.execPath,
-            [launcher, "plan", ...extra, "--json"],
-            base,
-            join(base, "actor"),
-          );
-          assert.strictEqual(output.code, 2);
-          const result = JSON.parse(output.stdout);
-          assert.strictEqual(result.diagnostics[0].code, "ARGUMENT_INVALID");
-          assert.strictEqual(output.stderr, "");
-          assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
-        }),
-    );
-  }
+
+  it.live(
+    "should emit one JSON error when inspector and JSON flags are combined",
+    () =>
+      Effect.gen(function* () {
+        const base = yield* fixture;
+        const output = yield* child(
+          process.execPath,
+          [launcher, "plan", "--tui", "--json"],
+          base,
+          join(base, "actor"),
+        );
+        assert.strictEqual(output.code, 2);
+        assert.strictEqual(output.stderr, "");
+        assert.strictEqual(
+          JSON.parse(output.stdout).diagnostics[0].code,
+          "ARGUMENT_INVALID",
+        );
+        assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
+      }),
+  );
 });

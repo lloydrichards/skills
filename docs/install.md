@@ -110,15 +110,3 @@ A clear plan offers Continue, followed by a confirmation of the exact destinatio
 The inspector labels Markdown from the checkout separately from installed Markdown. New upstream skills do not download previews during inspection. Source details show their repository, pin, and content identity. Installed upstream skills can show their existing owned copy. Previews use the MIT-licensed OKF Graph Markdown renderer, adapted locally with its types, parser, and table component. Frontmatter is hidden, terminal controls are stripped, tabs are expanded, HTML stays text, and links are not opened.
 
 Use a terminal at least 41 columns wide and 24 rows tall. The list and preview stack in narrow terminals. Restart after resizing. `--tui` requires terminal input and output and cannot be combined with `--json`. Omit `--tui` for the existing readable or JSON output. The session exits with the last command's result code and prints that result.
-
-## Keep using the design scratchpad
-
-The sample-data experiments remain separate from the live inspector:
-
-```sh
-bun run tui:demo
-bun run tui:demo --preview --plain --width 48
-bun run tui:demo --demo profiles
-```
-
-The scratchpad never installs anything. The live inspector runs through `apps/lab-skills/src/tui/live.ts` and the same command execution and installer services as the plain CLI. The sample layouts remain in `apps/lab-skills/src/scratchpad.ts` and `apps/lab-skills/src/tui/combined.ts`.

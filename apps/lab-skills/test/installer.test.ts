@@ -2,8 +2,6 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 import type { Command } from "effect/cli";
 import * as fs from "node:fs/promises";
-import { realpathSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
@@ -32,9 +30,9 @@ import {
 } from "../src/model.js";
 import { problem } from "../src/error.js";
 import { paths } from "../src/plan.js";
+import { io, temporaryDirectory } from "./support.js";
 
 const live = runtimeLayer(process.env.PATH ?? "");
-const io = <A>(f: () => Promise<A>) => Effect.tryPromise(f);
 const write = (file: string, content: string | Uint8Array) =>
   io(async () => {
     await fs.mkdir(dirname(file), { recursive: true });
@@ -76,13 +74,7 @@ const snapshot = (root: string) =>
     return canonical(values);
   });
 const fixture = Effect.gen(function* () {
-  const base = yield* Effect.acquireRelease(
-    io(() => fs.mkdtemp(join(realpathSync(tmpdir()), "lab-skills-test-"))),
-    (base) =>
-      io(() => fs.rm(base, { recursive: true, force: true })).pipe(
-        Effect.orDie,
-      ),
-  );
+  const base = yield* temporaryDirectory("lab-skills-test-");
   const root = join(base, "source"),
     home = join(base, "home"),
     config = join(base, "machine.json");
