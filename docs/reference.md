@@ -1,6 +1,6 @@
 # lab-skills command reference
 
-The authoritative public contract, versioned schemas, selection rules, diagnostics and exit codes are in [contract.md](contract.md). TypeScript definitions are in `packages/lab-skills/src/model.ts`. The CLI uses Effect 4.0.5 with aligned Node/Bun platform packages and a pinned platform-node-shared override. Node and Bun share the core program; runtime layers provide path, crypto, filesystem, HTTP, archive decoding, state and source inspection services.
+The authoritative public contract, versioned schemas, selection rules, diagnostics and exit codes are in [contract.md](contract.md). TypeScript definitions are in `apps/lab-skills/src/model.ts`. The CLI uses Effect 4.0.5 with aligned Node/Bun platform packages and a pinned platform-node-shared override. `effect/cli` defines command parsing and help. Node and Bun share the core program; runtime layers provide path, crypto, filesystem, HTTP, archive decoding, state and source inspection services.
 
 | Command | Network | Writes | Purpose |
 |---|---|---|---|
