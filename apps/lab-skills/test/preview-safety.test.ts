@@ -1,26 +1,17 @@
 import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 import * as fs from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { inspect, reviewedPlan } from "../src/tui/inspection.js";
 import { runtimeLayer } from "../src/runtime.js";
 import { Disk, SourceInspection } from "../src/services.js";
 import { parseMarkdown } from "../src/tui/okf/parse.js";
 import type { Flags } from "../src/config.js";
+import { io, temporaryDirectory } from "./support.js";
 
-const io = <A>(f: () => Promise<A>) => Effect.tryPromise(f);
 const content = "# Example\n\nInstalled skill preview.\n";
 const fixture = Effect.gen(function* () {
-  const base = yield* Effect.acquireRelease(
-    io(async () =>
-      fs.mkdtemp(join(await fs.realpath(tmpdir()), "lab-preview-")),
-    ),
-    (base) =>
-      io(() => fs.rm(base, { recursive: true, force: true })).pipe(
-        Effect.orDie,
-      ),
-  );
+  const base = yield* temporaryDirectory("lab-preview-");
   const root = join(base, "checkout");
   const home = join(base, "home");
   yield* io(() => fs.mkdir(join(root, "skills/a"), { recursive: true }));

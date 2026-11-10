@@ -1,5 +1,5 @@
 import { Data, Effect, Path } from "effect";
-import { type Catalog, validate } from "../catalog.js";
+import type { Catalog } from "../catalog.js";
 import { configure, type Environment, type Flags } from "../config.js";
 import { problem } from "../error.js";
 import { noLinks } from "../files.js";
@@ -117,15 +117,12 @@ export const inspect = Effect.fn("Tui.inspect")(function* (
       2,
     );
   const resolved = options ?? (yield* configure(flags, environment));
-  const result = yield* runCommand(
+  const { result, catalog: available } = yield* runCommand(
     root,
     inspectionFlags(flags.command, resolved, flags),
     environment,
     reviewed,
   );
-  // The command result owns validation diagnostics. An invalid catalog must still be inspectable.
-  const catalog = yield* validate(root).pipe(Effect.result);
-  const available = catalog._tag === "Success" ? catalog.success : undefined;
   const previews = yield* Effect.forEach(result.entries, (entry) =>
     preview(root, entry, available).pipe(
       Effect.map((value) => {

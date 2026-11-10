@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { parse, configure, type Environment, type Flags } from "./config.js";
-import { validate } from "./catalog.js";
+import { validate, type Catalog } from "./catalog.js";
 import { plan } from "./plan.js";
 import { apply } from "./apply.js";
 import { doctor } from "./doctor.js";
@@ -17,6 +17,7 @@ const execute = Effect.fn("LabSkills.run")(function* <R>(
 ) {
   let command = initialCommand,
     home: string | undefined;
+  let catalog: Catalog | undefined;
   let selection: Selection = { profiles: [], skills: [], targets: [] };
   const operation = Effect.gen(function* () {
     const flags = yield* loadFlags;
@@ -24,7 +25,7 @@ const execute = Effect.fn("LabSkills.run")(function* <R>(
     const options = yield* configure(flags, environment);
     home = options.home;
     selection = options.selection;
-    const catalog = yield* validate(root);
+    catalog = yield* validate(root);
     const sourceGit = yield* (yield* SourceInspection).git(root);
     const output =
       flags.command === "validate"
@@ -59,7 +60,7 @@ const execute = Effect.fn("LabSkills.run")(function* <R>(
       ),
     );
   });
-  return yield* operation.pipe(
+  const result = yield* operation.pipe(
     Effect.catchTag("LabError", (error) =>
       Effect.succeed({
         schemaVersion: 1,
@@ -81,13 +82,17 @@ const execute = Effect.fn("LabSkills.run")(function* <R>(
       } satisfies Result),
     ),
   );
+  return { result, catalog };
 });
 
 export const program = (
   root: string,
   args: ReadonlyArray<string>,
   environment: Environment,
-) => execute(root, args[0] ?? "unknown", parse(args), environment);
+) =>
+  execute(root, args[0] ?? "unknown", parse(args), environment).pipe(
+    Effect.map(({ result }) => result),
+  );
 
 export const runCommand = (
   root: string,

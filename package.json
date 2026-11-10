@@ -11,16 +11,16 @@
     "build": "turbo run build",
     "check": "bun run type-check",
     "type-check": "turbo run type-check",
-    "test": "bun run build && turbo run test",
+    "test": "bun run build && turbo run test && bun run test:skills",
     "test:bun": "bun run build && turbo run test:bun",
-    "lint": "oxlint --deny-warnings apps/lab-skills packages/config-typescript packages/lab-skills/bin",
-    "format": "oxfmt apps/lab-skills packages/config-typescript packages/lab-skills/bin package.json tsconfig.json turbo.json stack.effect.json .oxlintrc.json .oxfmtrc.jsonc .vscode .github/workflows/ci.yml",
+    "lint": "oxlint --deny-warnings apps/lab-skills packages/config-typescript packages/lab-skills/bin tests/skills",
+    "format": "oxfmt apps/lab-skills packages/config-typescript packages/lab-skills/bin package.json tsconfig.json turbo.json stack.effect.json .oxlintrc.json .oxfmtrc.jsonc .vscode .github/workflows/ci.yml tests/skills",
     "format:check": "bun run format --check",
     "prepare": "effect-tsgo patch --typescript --oxlint",
     "stack:schema": "bunx stack-effect@0.18.1 schema",
     "stack:plan": "bunx stack-effect@0.18.1 plan",
     "tui": "bun run build && node apps/lab-skills/bin/lab-skills.mjs plan --tui",
-    "tui:demo": "bun run build && node apps/lab-skills/bin/scratchpad.mjs"
+    "test:skills": "node --test tests/skills/*.test.mjs"
   },
   "engines": {
     "node": "^22.12.0 || ^24.0.0 || >=26.0.0"

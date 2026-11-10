@@ -2,7 +2,6 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { Box } from "effect-boxes";
 import * as fs from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   inspect,
@@ -23,16 +22,10 @@ import { runtimeLayer } from "../src/runtime.js";
 import { HttpBytes, SourceInspection } from "../src/services.js";
 import { problem } from "../src/error.js";
 import type { Flags } from "../src/config.js";
+import { io, temporaryDirectory } from "./support.js";
 
-const io = <A>(f: () => Promise<A>) => Effect.tryPromise(f);
 const fixture = Effect.gen(function* () {
-  const base = yield* Effect.acquireRelease(
-    io(async () => fs.mkdtemp(join(await fs.realpath(tmpdir()), "lab-tui-"))),
-    (base) =>
-      io(() => fs.rm(base, { recursive: true, force: true })).pipe(
-        Effect.orDie,
-      ),
-  );
+  const base = yield* temporaryDirectory("lab-tui-");
   const root = join(base, "checkout"),
     home = join(base, "home");
   for (const name of ["base", "extra"]) {

@@ -10,6 +10,22 @@ permissions:
 
 jobs:
   check:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+      - run: bun run check
+      - run: bun run lint
+
+  test:
     name: ${{ matrix.os }} / ${{ matrix.runtime }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -26,9 +42,6 @@ jobs:
         with:
           bun-version: "1.4.2"
       - run: bun install --frozen-lockfile
-      - run: bun run format:check
-      - run: bun run check
-      - run: bun run lint
       - if: matrix.runtime == 'node'
         run: bun run test
       - if: matrix.runtime == 'bun'

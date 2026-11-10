@@ -9,7 +9,13 @@
   },
   "overrides": [
     {
-      "files": ["**/*.test.ts", "**/*.test.tsx", "**/test/**/*.mjs"],
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/test/**/*.mjs",
+        "tests/**/*.mjs",
+        "apps/lab-skills/test/**/*.ts"
+      ],
       "rules": {
         "effecttsgo/async-function": "off",
         "effecttsgo/node-builtin-import": "off",

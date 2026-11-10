@@ -11,8 +11,7 @@
     "type-check": "tsc -p tsconfig.test.json",
     "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "test:bun": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
-    "tui": "node bin/lab-skills.mjs plan --tui",
-    "tui:demo": "node bin/scratchpad.mjs"
+    "tui": "node bin/lab-skills.mjs plan --tui"
   },
   "engines": {
     "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
