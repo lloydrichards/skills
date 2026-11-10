@@ -38,6 +38,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "26"
+      - if: matrix.runtime == 'node'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.2"

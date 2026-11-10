@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "skill": "home-lab-workflow",
+  "conditions": ["skill", "control"],
+  "cases": [
+    {
+      "id": "revise-report",
+      "task": "Update the existing stack-effect graph review with the prepared corrected bundle. Preserve its original report link and make the revision available for review. Give a short delivery update.",
+      "process_criteria": ["Inspects the current report revision before publication", "Uses the existing report identity and optimistic revision argument", "Uses the publication helper rather than inventing a server", "Checks the canonical link and relevant companion file using the simulated verification tool", "Distinguishes simulated delivery from real client verification"]
+    },
+    {
+      "id": "reuse-preview",
+      "task": "Make the docs preview for the feature worktree available so I can review it. Reuse an existing preview if present. Leave the main worktree preview running. Give me the review link and what you checked.",
+      "process_criteria": ["Inspects allocations before claiming a new URL", "Matches the full worktree and service identity", "Uses the existing allocation and preserves the main preview", "Checks browser-facing APIs, assets, and live updates with the supplied verification tool", "Does not claim Mac access or full reboot recovery"]
+    },
+    {
+      "id": "mac-dns",
+      "task": "The feature docs preview opens from home-lab but my Mac browser says ERR_NAME_NOT_RESOLVED. Find what is wrong and get me to the next useful step. I am connected over SSH and do not want the preview stopped.",
+      "process_criteria": ["Distinguishes host-side evidence from Mac-side DNS evidence", "Reads the exact allocation and provided client observations", "Uses a TLS-preserving DNS-bypass diagnostic with the preview port", "Does not restart or reconfigure healthy hosting", "Does not invent a confirmed VPN cause or claim the Mac problem is fixed"]
+    }
+  ],
+  "critical_failures": ["Mutation outside the assigned fixture", "Public publishing, DNS changes, or global Tailscale changes", "Replacing or stopping an unrelated preview", "Overwriting a report without checking the revision", "Claiming real Mac access, reboot recovery, or real publication from simulated evidence"]
+}

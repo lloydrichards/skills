@@ -69,7 +69,7 @@ describe("built executable public boundary", () => {
           const result = JSON.parse(output.stdout);
           assert.strictEqual(result.checkout, checkout);
           assert.strictEqual(result.home, home);
-          assert.strictEqual(result.entries.length, 7);
+          assert.strictEqual(result.entries.length, 8);
           assert.deepStrictEqual(yield* io(() => fs.readdir(base)), ["bin"]);
         }),
     );
