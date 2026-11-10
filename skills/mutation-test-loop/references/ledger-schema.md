@@ -111,3 +111,11 @@ Do not erase earlier attempts when a later mutation kills the same test. The
 test's top-level status reflects its latest valid adjudicated trial. Invalid or
 equivalent attempts leave the target pending until another credible mutation is
 tried or the target is explicitly blocked.
+
+The validator checks ledger structure and internal consistency, not the truth of
+recorded evidence. Verified terminal targets require a matching latest
+adjudicated attempt, a failed mutated run for `killed` or a passing mutated run
+for `survived`, proven restoration, and one passing clean test. A complete
+campaign must have active tests, a passing baseline with the same active count,
+and no running attempts. Inspect runner output and source restoration separately;
+historical example ledgers do not establish evidence for a new campaign.

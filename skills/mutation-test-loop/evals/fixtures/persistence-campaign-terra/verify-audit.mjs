@@ -33,4 +33,4 @@ for (const entry of ledger.tests) {
 assert.equal(await readFile("src/booking.mjs", "utf8"), originalSource, "production source was not restored exactly")
 const suite = spawnSync(process.execPath, ["--test", "test/booking.test.mjs"], { encoding: "utf8" })
 assert.equal(suite.status, 0, suite.stderr || suite.stdout)
-console.log("audit ledger proves six fresh, restored killed mutations")
+console.log("historical example ledger is internally consistent and the clean fixture suite passes; no mutation campaign was run")
