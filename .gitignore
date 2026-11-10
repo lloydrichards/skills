@@ -17,3 +17,9 @@ node_modules/
 
 # Local audit provenance, not shared configuration
 /SNAPSHOT.json
+
+# Workspace tool caches
+.turbo/
+.cache/
+*.tsbuildinfo
+coverage/

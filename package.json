@@ -5,32 +5,40 @@
   "type": "module",
   "description": "Editable skill source and lab-skills CLI; not an npm source distribution",
   "bin": {
-    "lab-skills": "packages/lab-skills/bin/lab-skills.mjs"
+    "lab-skills": "apps/lab-skills/bin/lab-skills.mjs"
   },
   "scripts": {
-    "build": "tsc -p packages/lab-skills/tsconfig.json",
-    "check": "tsc -p packages/lab-skills/tsconfig.test.json",
-    "test": "npm run build && vitest run --config packages/lab-skills/vitest.config.ts",
-    "test:bun": "npm run build && bun --bun node_modules/vitest/vitest.mjs run --config packages/lab-skills/vitest.config.ts"
+    "build": "turbo run build",
+    "check": "bun run type-check",
+    "type-check": "turbo run type-check",
+    "test": "bun run build && turbo run test",
+    "test:bun": "bun run build && turbo run test:bun",
+    "lint": "oxlint --deny-warnings apps/lab-skills packages/config-typescript packages/lab-skills/bin",
+    "format": "oxfmt apps/lab-skills packages/config-typescript packages/lab-skills/bin package.json tsconfig.json turbo.json stack.effect.json .oxlintrc.json .oxfmtrc.jsonc .vscode .github/workflows/ci.yml",
+    "format:check": "bun run format --check",
+    "prepare": "effect-tsgo patch --typescript --oxlint",
+    "stack:schema": "bunx stack-effect@0.18.1 schema",
+    "stack:plan": "bunx stack-effect@0.18.1 plan"
   },
   "engines": {
     "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   },
-  "dependencies": {
-    "effect": "4.0.5",
-    "@effect/platform-node": "4.0.5",
-    "@effect/platform-bun": "4.0.5",
-    "tar-stream": "3.1.7"
-  },
-  "devDependencies": {
-    "@effect/vitest": "4.0.5",
-    "@types/node": "24.10.0",
-    "@types/tar-stream": "3.1.4",
-    "typescript": "7.0.2",
-    "vitest": "5.0.3"
-  },
   "overrides": {
     "@effect/platform-node-shared": "4.0.5"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@effect/tsgo": "0.46.1",
+    "typescript": "7.0.2",
+    "turbo": "2.11.4",
+    "oxlint": "1.85.0",
+    "oxlint-tsgolint": "7.0.2003",
+    "oxfmt": "0.65.0",
+    "vitest": "5.0.3"
+  }
 }

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "type-check": {
+      "dependsOn": ["^type-check"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    },
+    "test:bun": {
+      "dependsOn": ["build"],
+      "cache": false
+    }
+  },
+  "globalDependencies": [
+    "manifest.json",
+    "sources.lock.json",
+    "skills/**",
+    "LICENSE",
+    "NOTICE.md"
+  ]
+}
