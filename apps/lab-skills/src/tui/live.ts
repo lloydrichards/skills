@@ -1,4 +1,5 @@
-import { Effect, Stdio, Terminal } from "effect";
+import { NodeTerminal } from "@effect/platform-node";
+import { Effect, Layer, Stdio, Terminal } from "effect";
 import { Prompt } from "effect/cli";
 import { Box, Cmd } from "effect-boxes";
 import { configure, parse, type Environment } from "../config.js";
@@ -9,7 +10,27 @@ import {
   reviewedPlan,
   withSelection,
 } from "./inspection.js";
-import { initialView, liveHandlers } from "./live-view.js";
+import { initialView, liveHandlers, type ViewState } from "./live-view.js";
+import type { Inspection } from "./inspection.js";
+
+// Escape belongs to screen navigation; only control keys end the input queue.
+export const shouldQuitInspector = (input: Terminal.UserInput) =>
+  input.key.ctrl && (input.key.name === "c" || input.key.name === "d");
+
+export const inspectorTerminal = Layer.effect(
+  Terminal.Terminal,
+  NodeTerminal.make(shouldQuitInspector),
+);
+
+export const promptIntent = (
+  state: ViewState,
+  model: Inspection,
+  width: number,
+  rows: number,
+) =>
+  Prompt.Custom(state, liveHandlers(model, width, rows)).pipe(
+    Effect.catchTag("QuitError", () => Effect.interrupt),
+  );
 
 const busy = <A, E, R>(message: string, operation: Effect.Effect<A, E, R>) =>
   Effect.gen(function* () {
@@ -60,10 +81,7 @@ export const interactive = Effect.fn("Tui.run")(function* (
   );
   let state = initialView(model);
   while (true) {
-    const intent = yield* Prompt.Custom(
-      state,
-      liveHandlers(model, width, rows),
-    );
+    const intent = yield* promptIntent(state, model, width, rows);
     if (intent._tag === "Quit") return model.result;
     if (intent._tag === "Install") {
       if (!canInstall(model.result)) continue;

@@ -110,6 +110,30 @@ const provide = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
 // Tests use real temporary checkouts and ownership state. No fixtures reach a user's discovery roots.
 describe("Live command inspector", () => {
   it.effect(
+    "shows the exact installation root when the home contains repeated spaces",
+    () =>
+      Effect.gen(function* () {
+        const f = yield* fixture;
+        const home = join(f.base, "two  spaces");
+        const model = yield* inspect(f.root, { ...f.flags, home }, { home });
+        const rendered = Box.renderPlainSync(
+          renderLive(
+            { ...initialView(model), page: "confirm" },
+            model,
+            100,
+            30,
+          ),
+        );
+        const encoded = JSON.stringify(join(home, ".agents", "skills")).replace(
+          / /g,
+          "\\u0020",
+        );
+        assert.include(rendered, encoded);
+        assert.notInclude(rendered, "two spaces");
+      }).pipe(Effect.provide(live), Effect.scoped),
+  );
+
+  it.effect(
     "reads actual changes and dependencies offline, installs through apply, and then shows current state",
     () =>
       Effect.gen(function* () {

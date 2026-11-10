@@ -17,7 +17,7 @@ import { program } from "./program.js";
 import { runtimeLayer } from "./runtime.js";
 import { Result } from "./model.js";
 
-const present = Effect.fn("Output.present")(function* (
+export const present = Effect.fn("Output.present")(function* (
   result: Result,
   json: boolean,
 ) {
@@ -35,8 +35,9 @@ const present = Effect.fn("Output.present")(function* (
   const noColor = yield* Config.String("NO_COLOR").pipe(Config.withDefault(""));
   const term = yield* Config.String("TERM").pipe(Config.withDefault(""));
   const colors = noColor.length === 0 && term !== "dumb";
-  const width =
-    stdoutTty || stderrTty ? Math.max(1, (yield* terminal.columns) - 1) : 80;
+  // Terminal.columns describes stdout. Redirected stdout has no terminal width.
+  const columns = stdoutTty ? yield* terminal.columns : 0;
+  const width = columns > 0 ? Math.max(1, columns - 1) : 80;
   const output = renderHuman(result, width);
   yield* Console.log(renderText(output.stdout, stdoutTty && colors));
   if (output.stderr.rows)
@@ -69,7 +70,10 @@ const run = Effect.fn("Cli.run")(function* (
       argv.includes("--tui") || argv.some((arg) => arg.startsWith("--tui="))
         ? Effect.flatMap(
             Effect.promise(() => import("./tui/live.js")),
-            ({ interactive }) => interactive(root, argv, environment),
+            ({ interactive, inspectorTerminal }) =>
+              interactive(root, argv, environment).pipe(
+                Effect.provide(inspectorTerminal),
+              ),
           ).pipe(
             Effect.catchTag("LabError", (error) =>
               Effect.succeed({

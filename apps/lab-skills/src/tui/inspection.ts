@@ -59,6 +59,19 @@ const preview = Effect.fn("Tui.preview")(function* (
       ),
     };
   const document = yield* noLinks(file).pipe(
+    Effect.flatMap(() => disk.info(file)),
+    Effect.flatMap((info) =>
+      info?.kind === "file"
+        ? Effect.void
+        : Effect.fail(
+            problem(
+              "PATH_UNSAFE",
+              "Skill preview requires a regular file",
+              3,
+              file,
+            ),
+          ),
+    ),
     Effect.flatMap(() => disk.read(file)),
     Effect.flatMap((bytes) =>
       Effect.try({

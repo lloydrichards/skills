@@ -1,4 +1,4 @@
-import { Data, Effect } from "effect";
+import { Data, Effect, Option } from "effect";
 import { Prompt } from "effect/cli";
 import { Ansi, Box, Cmd } from "effect-boxes";
 import { renderHuman } from "../output.js";
@@ -10,7 +10,15 @@ import {
 } from "./inspection.js";
 import { MarkdownBox } from "./okf/Markdown.js";
 import { parseMarkdown } from "./okf/parse.js";
-import { blank, frame, line, paragraph, selectedRow } from "./ui.js";
+import {
+  blank,
+  frame,
+  line,
+  literal,
+  literalValue,
+  paragraph,
+  selectedRow,
+} from "./ui.js";
 
 export interface ViewState {
   readonly page: "review" | "profiles" | "targets" | "confirm" | "outcome";
@@ -76,18 +84,22 @@ const paragraphs = (values: ReadonlyArray<string>, width: number) =>
 const detailDocument = (row: Row, model: Inspection, width: number) => {
   if ("diagnostic" in row) {
     const d = row.diagnostic;
-    return paragraphs(
+    return Box.vsep(
       [
-        `${d.severity.toUpperCase()} · ${d.code}`,
-        d.message,
-        ...(d.path ? [d.path] : []),
+        paragraph(`${d.severity.toUpperCase()} · ${d.code}`, width),
+        paragraph(d.message, width),
+        ...(d.path ? [literal(d.path, width)] : []),
         ...(d.code === "INTERRUPTED_OPERATION" || d.code === "ROLLBACK_FAILED"
           ? [
-              "Preserve the lock, journal, destinations and backups. Establish whether an installer is running, then follow docs/recovery.md.",
+              paragraph(
+                "Preserve the lock, journal, destinations and backups. Establish whether an installer is running, then follow docs/recovery.md.",
+                width,
+              ),
             ]
           : []),
       ],
-      width,
+      1,
+      Box.left,
     );
   }
   const entry = row.entry;
@@ -95,10 +107,10 @@ const detailDocument = (row: Row, model: Inspection, width: number) => {
     [
       `${entry.status} · ${entry.id}`,
       ...(entry.reason ? [entry.reason] : []),
-      `Destination: ${entry.path}`,
+      `Destination: ${literalValue(entry.path)}`,
       ...(entry.source
         ? [
-            `Source: ${entry.source.repository ?? "checkout"}/${entry.source.path}`,
+            `Source: ${literalValue(`${entry.source.repository ?? "checkout"}/${entry.source.path}`)}`,
             ...(entry.source.commit
               ? [`Pinned commit: ${entry.source.commit}`]
               : []),
@@ -160,16 +172,22 @@ const dimensions = (width: number, rows: number) => {
   };
 };
 const confirmation = (model: Inspection, width: number) =>
-  paragraphs(
+  Box.vsep(
     [
-      "Write the reviewed changes into these roots:",
-      ...installationRoots(model.options),
+      paragraph("Write the reviewed changes into these roots:", width),
+      ...installationRoots(model.options).map((root) => literal(root, width)),
       ...model.result.entries
         .filter((entry) => ["new", "update"].includes(entry.status))
-        .map((entry) => `${entry.status} · ${entry.id}`),
-      "Apply rechecks this plan, downloads and verifies payloads, then installs. A changed plan requires a new review.",
+        .map((entry) =>
+          paragraph(`${entry.status} · ${literalValue(entry.id)}`, width),
+        ),
+      paragraph(
+        "Apply rechecks this plan, downloads and verifies payloads, then installs. A changed plan requires a new review.",
+        width,
+      ),
     ],
-    width,
+    1,
+    Box.left,
   );
 const scrolled = (
   body: Box.Box<Ansi.AnsiStyle>,
@@ -543,7 +561,17 @@ export const liveHandlers = (
             Box.renderPrettySync(Cmd.cursorNextLine(1)),
     ),
   process: (input, state) =>
-    Effect.succeed(navigateLive(input.key.name, state, model, width, rows)),
+    input.key.ctrl && (input.key.name === "c" || input.key.name === "d")
+      ? Effect.interrupt
+      : Effect.succeed(
+          navigateLive(
+            input.key.name || Option.getOrElse(input.input, () => ""),
+            state,
+            model,
+            width,
+            rows,
+          ),
+        ),
   clear: (state) =>
     Box.renderPretty(
       Cmd.clearLines(renderLive(state, model, width, rows).rows + 1),
