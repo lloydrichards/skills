@@ -529,4 +529,41 @@ await import(${JSON.stringify(pathToFileURL(launcher).href)});
         }),
     );
   }
+  it.live(
+    "requires a terminal for --tui without reading or creating machine state",
+    () =>
+      Effect.gen(function* () {
+        const base = yield* fixture;
+        const output = yield* child(
+          process.execPath,
+          [launcher, "plan", "--tui", "--home", join(base, "home")],
+          base,
+          join(base, "actor"),
+        );
+        assert.strictEqual(output.code, 2);
+        assert.include(output.stderr, "ARGUMENT_INVALID");
+        assert.include(output.stderr, "interactive terminal");
+        assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
+      }),
+  );
+  for (const extra of [["--tui"], ["--tui=false"], ["--tui", "false"]]) {
+    it.live(
+      `rejects ${extra.join(" ")} with JSON as one structured error`,
+      () =>
+        Effect.gen(function* () {
+          const base = yield* fixture;
+          const output = yield* child(
+            process.execPath,
+            [launcher, "plan", ...extra, "--json"],
+            base,
+            join(base, "actor"),
+          );
+          assert.strictEqual(output.code, 2);
+          const result = JSON.parse(output.stdout);
+          assert.strictEqual(result.diagnostics[0].code, "ARGUMENT_INVALID");
+          assert.strictEqual(output.stderr, "");
+          assert.deepStrictEqual(yield* io(() => fs.readdir(base)), []);
+        }),
+    );
+  }
 });

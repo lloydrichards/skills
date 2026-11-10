@@ -1,23 +1,25 @@
 import { Effect } from "effect";
-import { parse, configure, type Environment } from "./config.js";
+import { parse, configure, type Environment, type Flags } from "./config.js";
 import { validate } from "./catalog.js";
 import { plan } from "./plan.js";
 import { apply } from "./apply.js";
 import { doctor } from "./doctor.js";
 import { Result, decode, type Selection } from "./model.js";
 import { SourceInspection } from "./services.js";
-import { problem } from "./error.js";
+import { problem, type LabError } from "./error.js";
 
-export const program = Effect.fn("LabSkills.run")(function* (
+const execute = Effect.fn("LabSkills.run")(function* <R>(
   root: string,
-  args: ReadonlyArray<string>,
+  initialCommand: string,
+  loadFlags: Effect.Effect<Flags, LabError, R>,
   environment: Environment,
+  reviewed?: string,
 ) {
-  let command = args[0] ?? "unknown",
+  let command = initialCommand,
     home: string | undefined;
   let selection: Selection = { profiles: [], skills: [], targets: [] };
   const operation = Effect.gen(function* () {
-    const flags = yield* parse(args);
+    const flags = yield* loadFlags;
     command = flags.command;
     const options = yield* configure(flags, environment);
     home = options.home;
@@ -30,7 +32,7 @@ export const program = Effect.fn("LabSkills.run")(function* (
         : flags.command === "doctor"
           ? yield* doctor(root, catalog, options)
           : flags.command === "apply"
-            ? yield* apply(root, catalog, options)
+            ? yield* apply(root, catalog, options, reviewed)
             : yield* plan(root, catalog, options);
     const conflict =
       output.diagnostics.some((d) => d.severity === "error") ||
@@ -80,3 +82,16 @@ export const program = Effect.fn("LabSkills.run")(function* (
     ),
   );
 });
+
+export const program = (
+  root: string,
+  args: ReadonlyArray<string>,
+  environment: Environment,
+) => execute(root, args[0] ?? "unknown", parse(args), environment);
+
+export const runCommand = (
+  root: string,
+  flags: Flags,
+  environment: Environment,
+  reviewed?: string,
+) => execute(root, flags.command, Effect.succeed(flags), environment, reviewed);

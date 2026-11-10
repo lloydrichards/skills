@@ -47,11 +47,39 @@ const run = Effect.fn("Cli.run")(function* (
     const xdgConfig = yield* Config.String("XDG_CONFIG_HOME").pipe(
       Config.withDefault(""),
     );
-    return yield* program(root, argv, {
+    const environment = {
       home,
       ...(config ? { config } : {}),
       ...(xdgConfig ? { xdgConfig } : {}),
-    }).pipe(Effect.provide(runtimeLayer(envPath)));
+    };
+    const operation =
+      argv.includes("--tui") || argv.some((arg) => arg.startsWith("--tui="))
+        ? Effect.flatMap(
+            Effect.promise(() => import("./tui/live.js")),
+            ({ interactive }) => interactive(root, argv, environment),
+          ).pipe(
+            Effect.catchTag("LabError", (error) =>
+              Effect.succeed({
+                schemaVersion: 1,
+                command: argv[0] ?? "unknown",
+                ok: false,
+                exitCode: error.exitCode,
+                checkout: root,
+                selection: { profiles: [], skills: [], targets: [] },
+                entries: [],
+                diagnostics: [
+                  {
+                    code: error.code,
+                    severity: "error",
+                    message: error.message,
+                    ...(error.path ? { path: error.path } : {}),
+                  },
+                ],
+              } satisfies Result),
+            ),
+          )
+        : program(root, argv, environment);
+    return yield* operation.pipe(Effect.provide(runtimeLayer(envPath)));
   }).pipe(
     Effect.catchCauseIf(
       (cause) => !Cause.hasInterrupts(cause),
