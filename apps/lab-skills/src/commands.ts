@@ -22,6 +22,10 @@ const selected = (name: string) =>
     Flag.map((values) => (values.length ? values : undefined)),
   );
 const options = {
+  tui: Flag.Boolean("tui").pipe(
+    Flag.withDefault(false),
+    Flag.withDescription("Open the interactive installation inspector"),
+  ),
   json: Flag.Boolean("json").pipe(
     Flag.atLeast(0),
     Flag.map((values) => values.some(Boolean)),
@@ -52,6 +56,7 @@ const commandTree = <E, R>(
       handle({
         command,
         json: flags.json,
+        ...(flags.tui ? { tui: true } : {}),
         ...(flags.home === undefined ? {} : { home: flags.home }),
         ...(flags.profiles === undefined ? {} : { profiles: flags.profiles }),
         ...(flags.skills === undefined ? {} : { skills: flags.skills }),
@@ -97,6 +102,24 @@ export const parse = Effect.fn("Arguments.parse")(function* (
       2,
     );
   }
+  if (
+    args.some(
+      (arg, index) =>
+        arg.startsWith("--tui=") ||
+        (arg === "--tui" && ["true", "false"].includes(args[index + 1] ?? "")),
+    )
+  )
+    return yield* problem(
+      "ARGUMENT_INVALID",
+      "--tui is a bare switch without a value",
+      2,
+    );
+  if (args.includes("--tui") && args.includes("--json"))
+    return yield* problem(
+      "ARGUMENT_INVALID",
+      "--tui cannot be combined with --json",
+      2,
+    );
   const result = yield* Ref.make(Option.none<Flags>());
   const console = yield* Console.Console;
   // Effect CLI 4.0.5 renders help on parse failures, even with renderErrors

@@ -18,7 +18,9 @@
     "format:check": "bun run format --check",
     "prepare": "effect-tsgo patch --typescript --oxlint",
     "stack:schema": "bunx stack-effect@0.18.1 schema",
-    "stack:plan": "bunx stack-effect@0.18.1 plan"
+    "stack:plan": "bunx stack-effect@0.18.1 plan",
+    "tui": "bun run build && node apps/lab-skills/bin/lab-skills.mjs plan --tui",
+    "tui:demo": "bun run build && node apps/lab-skills/bin/scratchpad.mjs"
   },
   "engines": {
     "node": "^22.12.0 || ^24.0.0 || >=26.0.0"

@@ -8,6 +8,7 @@ export type Command = "validate" | "status" | "plan" | "apply" | "doctor";
 export interface Flags {
   command: Command;
   json: boolean;
+  tui?: boolean;
   home?: string;
   profiles?: ReadonlyArray<string>;
   skills?: ReadonlyArray<string>;

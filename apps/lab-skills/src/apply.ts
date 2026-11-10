@@ -1,6 +1,12 @@
 import { Effect, Exit, Path } from "effect";
 import { type Catalog, validate } from "./catalog.js";
-import { type Job, type Options, type Plan, plan } from "./plan.js";
+import {
+  type Job,
+  type Options,
+  type Plan,
+  plan,
+  reviewFingerprint,
+} from "./plan.js";
 import {
   Archives,
   Disk,
@@ -119,11 +125,27 @@ export const apply = Effect.fn("Apply.run")(function* (
   root: string,
   catalog: Catalog,
   options: Options,
+  reviewed?: string,
 ) {
   const disk = yield* Disk,
     path = yield* Path.Path,
     store = yield* OwnershipState;
   const initial = yield* plan(root, catalog, options);
+  if (
+    reviewed !== undefined &&
+    reviewed !==
+      reviewFingerprint(
+        options.home,
+        options.selection,
+        initial.entries,
+        initial.diagnostics,
+      )
+  )
+    return yield* problem(
+      "SOURCE_CHANGED",
+      "The reviewed plan changed. Review a fresh plan before installing.",
+      3,
+    );
   if (assertClear(initial)) return initial;
   const changes = initial.jobs.filter((job) =>
     initial.entries.some(

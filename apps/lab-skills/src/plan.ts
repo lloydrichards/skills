@@ -1,6 +1,12 @@
 import { Effect, Path, Schema } from "effect";
 import { type Catalog, selection } from "./catalog.js";
-import { Disk, OwnershipState, SourceInspection, equal } from "./services.js";
+import {
+  Disk,
+  OwnershipState,
+  SourceInspection,
+  equal,
+  canonical,
+} from "./services.js";
 import {
   identifier,
   inventory,
@@ -437,3 +443,23 @@ export const plan = Effect.fn("Plan.compute")(function* (
   return { entries, diagnostics, jobs, state, location };
 });
 export type Plan = Effect.Success<ReturnType<typeof plan>>;
+
+// Git metadata is informational. Installation content, scope, and diagnostics require renewed consent.
+export const reviewFingerprint = (
+  home: string,
+  selection: Selection,
+  entries: ReadonlyArray<Entry>,
+  diagnostics: ReadonlyArray<Diagnostic>,
+) =>
+  canonical({
+    home,
+    selection,
+    entries: entries.map(({ source, installedSource, ...entry }) => ({
+      ...entry,
+      ...(source ? { source: { ...source, git: undefined } } : {}),
+      ...(installedSource
+        ? { installedSource: { ...installedSource, git: undefined } }
+        : {}),
+    })),
+    diagnostics,
+  });
