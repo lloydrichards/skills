@@ -342,6 +342,34 @@ describe('lab-skills filesystem contract, no upstream network', () => {
       yield* io(() => fs.symlink('/nonexistent', join(f.root, 'skills/app/link')))
       code(yield* f.run('validate'), 'SOURCE_INVALID', 2)
     }))
+  test('case-colliding local files are rejected before home or ownership state is created', () =>
+    Effect.gen(function* () {
+      const f = yield* fixture
+      const disk = yield* Disk
+      const source = join(f.root, 'skills/app')
+      const original = join(source, 'SKILL.md')
+      const collision = join(source, 'skill.md')
+      // Model a case-sensitive source even when the host filesystem folds case.
+      const collidingDisk = {
+        ...disk,
+        list: (path: string) =>
+          disk.list(path).pipe(
+            Effect.map((names) => path === source ? [...names, 'skill.md'] : names),
+          ),
+        info: (path: string) => disk.info(path === collision ? original : path),
+        read: (path: string) => disk.read(path === collision ? original : path),
+      }
+      for (const command of ['validate', 'apply']) {
+        const result = yield* f.run(command, '--target', 'agents').pipe(
+          Effect.provideService(Disk, collidingDisk),
+        )
+        code(result, 'SOURCE_INVALID', 2)
+        assert.isTrue(result.diagnostics.some((d) => d.message.includes('Case-colliding')))
+        assert.isUndefined(yield* disk.info(f.home))
+      }
+      successful(yield* f.run('apply', '--target', 'agents'))
+      successful(yield* f.run('status', '--target', 'agents'))
+    }))
   test('candidates, external entries and blocked skills cannot be selected', () =>
     Effect.gen(function* () {
       const f = yield* fixture

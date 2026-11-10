@@ -85,7 +85,13 @@ export const inventory = Effect.fn('Files.inventory')(function* (root: string, s
   const walk = Effect.fn('Files.walk')(function* (
     dir: string,
   ): Effect.fn.Return<void, import('./error.js').LabError> {
+    const foldedNames = new Set<string>()
     for (const name of yield* disk.list(dir)) {
+      if (source && foldedNames.has(name.toLowerCase()))
+        return yield* Effect.fail(
+          problem('SOURCE_INVALID', 'Case-colliding source paths', 2, path.join(dir, name)),
+        )
+      foldedNames.add(name.toLowerCase())
       const full = path.join(dir, name),
         rel = path.relative(root, full).split(path.sep).join('/')
       yield* relative(rel)
