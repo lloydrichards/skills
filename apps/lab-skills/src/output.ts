@@ -1,6 +1,6 @@
 import { Ansi, Box } from "effect-boxes";
 import type { Diagnostic, Entry, Result } from "./model.js";
-import { blank, paragraph, text } from "./tui/ui.js";
+import { blank, literal, paragraph, text } from "./tui/ui.js";
 
 const labels: Record<Entry["status"], string> = {
   new: "Add",
@@ -60,14 +60,15 @@ const entryTable = (
       width >= 40
         ? row([
             text(labels[entry.status], tone(entry.status)),
-            paragraph(name, nameWidth),
-            paragraph(entry.path, pathWidth),
+            literal(name, nameWidth),
+            literal(entry.path, pathWidth),
           ])
         : column([
-            paragraph(`${labels[entry.status]} · ${name}`, width).pipe(
+            paragraph(labels[entry.status], width).pipe(
               Box.annotate(tone(entry.status)),
             ),
-            paragraph(entry.path, width),
+            literal(name, width),
+            literal(entry.path, width),
           ]);
     if (
       rows.length > (width >= 40 ? 2 : 0) &&
@@ -99,9 +100,7 @@ const diagnosticBlocks = (
         ),
       ),
       paragraph(d.message, width),
-      ...(d.path
-        ? [paragraph(d.path, width).pipe(Box.annotate(Ansi.dim))]
-        : []),
+      ...(d.path ? [literal(d.path, width).pipe(Box.annotate(Ansi.dim))] : []),
     ]),
   );
   if (
@@ -132,10 +131,10 @@ export const renderHuman = (result: Result, columns = 80) => {
   );
   const body: Array<Box.Box<Ansi.AnsiStyle>> = [];
   const scope = () =>
-    paragraph(
-      `${result.selection.targets.join(", ")} · ${result.home ?? result.checkout}`,
-      width,
-    ).pipe(Box.annotate(Ansi.dim));
+    column([
+      paragraph(result.selection.targets.join(", "), width),
+      literal(result.home ?? result.checkout, width),
+    ]).pipe(Box.annotate(Ansi.dim));
   let title: string;
   switch (result.command) {
     case "validate":
@@ -143,9 +142,7 @@ export const renderHuman = (result: Result, columns = 80) => {
         ? "Source definitions are valid"
         : "Source definitions need attention";
       if (result.ok)
-        body.push(
-          paragraph(result.checkout, width).pipe(Box.annotate(Ansi.dim)),
-        );
+        body.push(literal(result.checkout, width).pipe(Box.annotate(Ansi.dim)));
       break;
     case "doctor":
       title = result.diagnostics.length
