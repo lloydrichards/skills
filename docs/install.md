@@ -14,6 +14,20 @@ bun run build
 node apps/lab-skills/bin/lab-skills.mjs validate
 ```
 
+To use the Stack Effect Nix development shell, install Nix with flakes enabled. Add the generated files to Git so Nix can see them, then enter the shell:
+
+```sh
+git add flake.nix .envrc
+nix develop
+bun install --frozen-lockfile
+bun run build
+node apps/lab-skills/bin/lab-skills.mjs validate
+```
+
+The shell provides Bun, Node 24, and Git on x86_64 Linux, aarch64 Linux, and Apple Silicon macOS. Nixpkgs determines their versions. The first `nix develop` creates `flake.lock`; commit that file to pin the environment. This environment was generated with Stack Effect 0.18.1's `workspace-devenv-nix-flake` module.
+
+If you use direnv with nix-direnv, run `direnv allow` to load the same shell automatically. `.direnv/` and Nix result links are ignored by Git.
+
 After the build, Node execution does not require a Bun executable. To test Bun execution explicitly:
 
 ```sh

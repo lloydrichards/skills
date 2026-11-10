@@ -23,3 +23,8 @@ node_modules/
 .cache/
 *.tsbuildinfo
 coverage/
+
+# Nix development shell
+.direnv/
+/result
+/result-*
