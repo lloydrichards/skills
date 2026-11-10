@@ -290,6 +290,15 @@
       "prerequisites": [
         "Fresh subagent delegation and the target project test runner; behavioral-test-refactoring is optional for broad suite redesign"
       ]
+    },
+    "home-lab-workflow": {
+      "ownership": "custom",
+      "source": {
+        "local": "skills/home-lab-workflow"
+      },
+      "dependencies": [
+        "report-builder"
+      ]
     }
   },
   "profiles": {
@@ -299,7 +308,8 @@
       "deslop",
       "unslop",
       "technical-writing",
-      "explain-diff"
+      "explain-diff",
+      "home-lab-workflow"
     ],
     "effect": [
       "effect"
