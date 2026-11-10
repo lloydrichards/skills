@@ -1,0 +1,12 @@
+# Open migration decisions
+
+- Owner-confirmed make-pr and mutation-test-loop are added separately in PR #2, including the portable mutation evaluation. This base change keeps their preserved snapshots outside managed selections.
+- Establish GitButler skill provenance and installed CLI versions, and Rex CLI versions. Their skill names are reserved as externally managed. Do not deduplicate their existing installations as part of this proposal.
+- Resolve code-review's tracker setup assumption before removing its explicit installation block. It is third-party, not a custom skill.
+- Verify discovery and precedence on HP's installed OpenCode and Pi versions. Select one discovery root per harness to avoid duplicate names. The manifests support variants but do not edit runtime permissions or configuration.
+- Decide separately whether to maintain the larger skill-creator, skill-doctor, and install-anti-slop forks. They are excluded from managed selections and preserved outside the public tree. Any future skill-creator inclusion also needs a Codex system-name collision decision.
+- Review arena's named principle-skill references against the engineering-principles wrapper. The dependency includes the guidance, but tool-specific skill invocation may need an adapter. improve-codebase-architecture still refers to optional codebase-design, which is absent.
+- Obtain platform-specific Impeccable engine 0.1.5 separately. Both preserved source variants match upstream 4.3.1, but the local Mac engine was excluded. Installing newer upstream versions is a separate review.
+- Decide a later adoption/recovery procedure for current installations. The installer deliberately refuses unowned files, existing links, missing owned directories and orphaned ownership state. It does not delete or repair them.
+- Review attribution before publication. Existing notices and discovered upstream licenses are preserved, and comparison baselines are identified accurately. No new ownership claim is made for pending candidates.
+- Choose permanent editable checkout locations on Mac and HP. Keep source synchronization separate from installer-owned copies and machine-local state. The publication branch was prepared in an isolated checkout without changing the live Mac workspace.

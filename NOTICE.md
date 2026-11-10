@@ -49,3 +49,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## Shared-skills migration additions
+
+Third-party content retains its own licenses and attribution. Maintained adaptations keep required upstream notices beside their source. The installer bundles the repository's root LICENSE and NOTICE.md into generated local installations; those copies are not stored in each source folder. Manifest-only installations carry the notices recorded in their immutable source locks.
+
+Additional maintained adaptations:
+
+- `deslop`: millionco/react-doctor, comparison baseline f1913f27f5b0ae895119dc9b73102bdebc7bbc14. Local rewrite and added guidance.
+- `unslop`: backnotprop/pstack, comparison baseline 55bfdc262dd7f99254d19b53a96cf1dfb24c213b. Local terminology examples.
+- `engineering-principles`: backnotprop/pstack, explicitly recorded revision 157aae39a733135e93d8b5b19ff62c6a84b0ad56. Custom wrapper, repackaged references and relative-link adjustments. See LICENSE.upstream.
+
+Exact upstream paths, immutable commits, file hashes, executable flags and baseline qualifications for manifest-only installations are in sources.lock.json. A comparison baseline is not proof of an original installation revision. Candidate snapshots are outside this public source tree and receive no new ownership or license claim here.

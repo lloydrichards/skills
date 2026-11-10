@@ -1,8 +1,9 @@
 ---
 name: behavioral-test-refactoring
 description: |
-  Audit and refactor existing unit and contract test suites so they express observable behaviour with high signal. Use whenever the user asks to tidy, clean up, consolidate, simplify, reduce duplication in, rename, review, or refactor tests; make tests BDD-style or behaviour-focused; or reduce test noise after a feature. Start with a read-only behaviour audit unless the user explicitly authorizes edits. Use this skill even when the user does not name BDD: implementation-coupled mocks, duplicate test layers, overly large test files, unclear test names, and feature-end test accumulation are all signals to apply it.
-version: "0.1.0"
+  Audit and refactor existing unit and contract test suites so they express observable behaviour with high signal. Use when the user asks to tidy, clean up, consolidate, simplify, reduce duplication in, rename, review, or refactor tests; make tests BDD-style or behaviour-focused; or reduce test noise after a feature. Prefer a repository's designated test-audit workflow unless the user explicitly requests this workflow. Start with a read-only behaviour audit unless the user explicitly authorizes edits. Implementation-coupled mocks, duplicate test layers, overly large test files, unclear test names, and feature-end test accumulation are signals to consider it.
+metadata:
+  version: "0.1.0"
 ---
 
 # Behavioral Test Hygiene
@@ -12,6 +13,8 @@ Improve a test suite's ability to communicate and protect observable behaviour. 
 This is not a test-framework setup guide, a coverage-maximization exercise, or a request to convert every test to Gherkin. For Effect mechanics—layers, deterministic time, concurrency, fakes, and assertions—use the existing `effect` skill as well.
 
 ## Scope and authority
+
+Read repository testing guidance first. When it assigns existing-test audits to a local skill, follow that workflow instead of running this audit as well. Use this workflow there only when the user explicitly requests it. Local test-selection policy, runner commands, and evidence requirements still apply.
 
 Prioritize unit and contract suites. Include an integration suite only when it expresses a stable service or adapter boundary. Do not redesign E2E, property, performance, or visual suites in v1 unless the user narrows the request to one of them.
 
