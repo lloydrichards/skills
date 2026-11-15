@@ -4,6 +4,8 @@ import { blank, literal, paragraph, text } from "./tui/ui.js";
 
 const labels: Record<Entry["status"], string> = {
   new: "Add",
+  adopt: "Adopt",
+  remove: "Remove",
   update: "Update",
   conflict: "Conflict",
   applied: "Installed",
@@ -127,7 +129,9 @@ export const renderHuman = (result: Result, columns = 80) => {
   const entries = result.entries.filter(
     (entry) =>
       result.command === "status" ||
-      ["new", "update", "conflict", "applied"].includes(entry.status),
+      ["new", "adopt", "remove", "update", "conflict", "applied"].includes(
+        entry.status,
+      ),
   );
   const body: Array<Box.Box<Ansi.AnsiStyle>> = [];
   const scope = () =>

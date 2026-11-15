@@ -153,6 +153,8 @@ export const Entry = Schema.Struct({
   path: Schema.String,
   status: Schema.Literals([
     "new",
+    "adopt",
+    "remove",
     "current",
     "update",
     "conflict",
@@ -190,7 +192,8 @@ export const JournalItem = Schema.Struct({
   stage: Schema.String,
   backup: Schema.String,
   old: Schema.optionalKey(Owned),
-  next: Owned,
+  adopted: Schema.optionalKey(Tree),
+  next: Schema.optionalKey(Owned),
 });
 export type JournalItem = typeof JournalItem.Type;
 export const Journal = Schema.Struct({

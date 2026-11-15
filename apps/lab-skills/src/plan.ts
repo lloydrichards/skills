@@ -33,6 +33,9 @@ export interface Options {
   readonly home: string;
   readonly selection: Selection;
   readonly archiveDir?: string;
+  readonly adopt?: Readonly<Record<string, Tree>>;
+  readonly remove?: ReadonlyArray<string>;
+  readonly repairMissing?: ReadonlyArray<string>;
 }
 export interface Job {
   readonly id: string;
@@ -42,6 +45,9 @@ export interface Job {
   readonly payload: Source;
   readonly local?: string;
   readonly notices?: Readonly<Record<string, string>>;
+  readonly adopted?: Tree;
+  readonly remove?: boolean;
+  readonly missing?: boolean;
 }
 export const paths = (home: string) => ({
   state: home + "/.local/state/lab-skills/state.json",
@@ -349,6 +355,38 @@ export const plan = Effect.fn("Plan.compute")(function* (
         yield* noLinks(destination);
         const info = yield* disk.info(destination);
         if (!old) {
+          if (info && options.adopt?.[id]) {
+            const actual = yield* inventory(destination);
+            const noticesAllowed = new Set(
+              Object.keys(
+                notices ??
+                  catalog.lock.sources[
+                    "locked" in payload ? payload.locked : ""
+                  ]?.license_files ??
+                  {},
+              ),
+            );
+            if (
+              !equal(actual, options.adopt[id]) ||
+              Object.entries(actual.files).some(
+                ([name, file]) => !equal(file, tree.files[name]),
+              ) ||
+              Object.keys(tree.files).some(
+                (name) => !actual.files[name] && !noticesAllowed.has(name),
+              ) ||
+              !equal(actual.directories, tree.directories) ||
+              actual.rootMode !== tree.rootMode ||
+              !equal(actual.directoryModes, tree.directoryModes)
+            )
+              return yield* problem(
+                "LOCAL_EDIT",
+                "Adoption no longer matches the reviewed files and missing notices",
+                3,
+                destination,
+              );
+            jobs[jobs.length - 1] = { ...job, adopted: actual };
+            return "adopt" as const;
+          }
           if (info)
             return yield* problem(
               "UNOWNED_DESTINATION",
@@ -360,6 +398,10 @@ export const plan = Effect.fn("Plan.compute")(function* (
           return "new" as const;
         }
         yield* verifyTree(old.tree, location.state);
+        if (!info && options.repairMissing?.includes(id)) {
+          jobs[jobs.length - 1] = { ...job, missing: true };
+          return "new" as const;
+        }
         if (!info)
           return yield* problem(
             "MANAGED_MISSING",
@@ -414,14 +456,40 @@ export const plan = Effect.fn("Plan.compute")(function* (
       Effect.result,
     );
     if (checked._tag === "Failure") conflict(id, destination, checked.failure);
-    else
+    else {
+      const remove =
+        options.remove?.includes(id) &&
+        options.selection.targets.includes(target);
+      if (remove) {
+        const physicalDestination = yield* physicalPath(destination);
+        if (
+          physicalDestination === physicalRoot ||
+          physicalRoot.startsWith(physicalDestination + path.sep) ||
+          physicalDestination.startsWith(physicalRoot + path.sep)
+        )
+          return yield* problem(
+            "PATH_UNSAFE",
+            "Removal overlaps source checkout",
+            3,
+            destination,
+          );
+        jobs.push({
+          id,
+          destination,
+          tree: old.tree,
+          source: old.source,
+          payload: { local: "" },
+          remove: true,
+        });
+      }
       entries.push({
         id,
         path: destination,
-        status: "unselected",
+        status: remove ? "remove" : "unselected",
         source: old.source,
         installedSource: old.source,
       });
+    }
   }
   for (const target of options.selection.targets) {
     const base = path.join(options.home, roots[target]);

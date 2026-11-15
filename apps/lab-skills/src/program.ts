@@ -22,6 +22,12 @@ const execute = Effect.fn("LabSkills.run")(function* <R>(
   const operation = Effect.gen(function* () {
     const flags = yield* loadFlags;
     command = flags.command;
+    if (flags.dryRun || flags.command === "inventory")
+      return yield* problem(
+        "ARGUMENT_INVALID",
+        "Dry-run inventory is available through the CLI entry point",
+        2,
+      );
     const options = yield* configure(flags, environment);
     home = options.home;
     selection = options.selection;

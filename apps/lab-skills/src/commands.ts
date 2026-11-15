@@ -1,7 +1,7 @@
 import { Console, Effect, Option, Ref } from "effect";
 import { CliConfig, CliOutput, Command, Flag, GlobalFlag } from "effect/cli";
 import type { Command as CommandName, Flags } from "./config.js";
-import { problem } from "./error.js";
+import { problem, type LabError } from "./error.js";
 
 const last = (name: string) =>
   Flag.String(name).pipe(
@@ -22,6 +22,16 @@ const selected = (name: string) =>
     Flag.map((values) => (values.length ? values : undefined)),
   );
 const options = {
+  dryRun: Flag.Boolean("dry-run").pipe(
+    Flag.withDefault(false),
+    Flag.withDescription(
+      "Preview inventory and profile/adoption proposals without writing files",
+    ),
+  ),
+  ascii: Flag.Boolean("ascii").pipe(
+    Flag.withDefault(false),
+    Flag.withDescription("Use ASCII selection markers and review borders"),
+  ),
   tui: Flag.Boolean("tui").pipe(
     Flag.withDefault(false),
     Flag.withDescription("Open the interactive installation inspector"),
@@ -56,6 +66,8 @@ const commandTree = <E, R>(
       handle({
         command,
         json: flags.json,
+        ...(flags.dryRun ? { dryRun: true } : {}),
+        ...(flags.ascii ? { ascii: true } : {}),
         ...(flags.tui ? { tui: true } : {}),
         ...(flags.home === undefined ? {} : { home: flags.home }),
         ...(flags.profiles === undefined ? {} : { profiles: flags.profiles }),
@@ -67,17 +79,28 @@ const commandTree = <E, R>(
           : { archiveDir: flags.archiveDir }),
       }),
     );
-  return Command.make("lab-skills", {}, () =>
-    Effect.fail(
-      problem(
-        "ARGUMENT_INVALID",
-        "Choose validate, status, plan, apply, or doctor. Use --help for syntax.",
-        2,
-      ),
-    ),
+  return Command.make(
+    "lab-skills",
+    options,
+    (flags): Effect.Effect<void, E | LabError, R> =>
+      handle({
+        command: "inventory",
+        json: flags.json,
+        ...(flags.dryRun ? { dryRun: true } : {}),
+        ...(flags.ascii ? { ascii: true } : {}),
+        ...(flags.tui ? { tui: true } : {}),
+        ...(flags.home === undefined ? {} : { home: flags.home }),
+        ...(flags.profiles === undefined ? {} : { profiles: flags.profiles }),
+        ...(flags.skills === undefined ? {} : { skills: flags.skills }),
+        ...(flags.targets === undefined ? {} : { targets: flags.targets }),
+        ...(flags.config === undefined ? {} : { config: flags.config }),
+        ...(flags.archiveDir === undefined
+          ? {}
+          : { archiveDir: flags.archiveDir }),
+      }),
   ).pipe(
     Command.withDescription(
-      "Install and inspect skills from the owning editable checkout. apply requires explicit home and target. agents selects ~/.agents/skills; it is a destination, not a harness. See docs/contract.md.",
+      "Toggle skills and review profiles from the editable checkout. Enter reviews; a then y saves and applies local files. --dry-run disables writes. Legacy apply requires explicit home and target. See docs/contract.md.",
     ),
     Command.withSubcommands(commandNames.map(subcommand)),
   );
@@ -86,6 +109,29 @@ const commandTree = <E, R>(
 export const parse = Effect.fn("Arguments.parse")(function* (
   args: ReadonlyArray<string>,
 ) {
+  for (const name of ["dry-run", "ascii"])
+    if (
+      args.some(
+        (arg, index) =>
+          arg.startsWith(`--${name}=`) ||
+          (arg === `--${name}` &&
+            ["true", "false"].includes(args[index + 1] ?? "")),
+      )
+    )
+      return yield* problem(
+        "ARGUMENT_INVALID",
+        `--${name} is a bare switch without a value`,
+        2,
+      );
+  if (
+    args.includes("--dry-run") &&
+    (args.includes("--json") || args.includes("--tui"))
+  )
+    return yield* problem(
+      "ARGUMENT_INVALID",
+      "--dry-run cannot be combined with --json or --tui",
+      2,
+    );
   // Keep --json a bare switch. Effect CLI also accepts Boolean values, which
   // would disagree with the launcher's raw-token JSON selection on failures.
   if (
@@ -148,7 +194,7 @@ export const parse = Effect.fn("Arguments.parse")(function* (
       ),
     ),
   );
-  return yield* Effect.fromOption(yield* Ref.get(result)).pipe(
+  const parsed = yield* Effect.fromOption(yield* Ref.get(result)).pipe(
     Effect.mapError(() =>
       problem(
         "ARGUMENT_INVALID",
@@ -157,6 +203,25 @@ export const parse = Effect.fn("Arguments.parse")(function* (
       ),
     ),
   );
+  if (parsed.command === "inventory" && (parsed.json || parsed.tui))
+    return yield* problem(
+      "ARGUMENT_INVALID",
+      "The inventory cannot be combined with --json or --tui",
+      2,
+    );
+  if (parsed.dryRun && parsed.command !== "inventory")
+    return yield* problem(
+      "ARGUMENT_INVALID",
+      "Use lab-skills --dry-run without a subcommand",
+      2,
+    );
+  if (parsed.ascii && parsed.command !== "inventory")
+    return yield* problem(
+      "ARGUMENT_INVALID",
+      "--ascii requires the inventory",
+      2,
+    );
+  return parsed;
 });
 
 export const help = (args: ReadonlyArray<string>) =>
