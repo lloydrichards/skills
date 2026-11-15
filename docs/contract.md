@@ -5,22 +5,27 @@ This contract precedes the Effect implementation. Source lives in skills/, manif
 ## Commands and selection
 
 ```
+lab-skills --dry-run
 lab-skills validate --json
-lab-skills plan --home /home/coder --profile default --profile effect --target agents
+lab-skills plan --home /home/coder --profile home-lab --target agents
 lab-skills status --home /home/coder --target pi
-lab-skills apply --home /home/coder --profile default --target agents
+lab-skills apply --home /home/coder --profile home-lab --target agents
 lab-skills doctor --home /home/coder --target agents --target claude
 ```
 
-agents is a destination root, ~/.agents/skills, not a harness. Targets codex, claude, opencode and pi select their respective roots. --harness is a compatibility alias for --target. Explicit profiles replace the implicit default. --skill selects individual skills with transitive dependencies. Profiles and skills combine. With explicit skills and no profiles, there is no implicit default. Omitted previously owned skills remain installed and are reported as unselected.
+agents is a destination root, ~/.agents/skills, not a harness. Targets codex, claude, opencode and pi select their respective roots. --harness is a compatibility alias for --target. Explicit profiles replace the implicit default. The catalog now defines client and home-lab; the legacy default selection aliases client when default is absent. --skill selects individual skills with transitive dependencies. Profiles and skills combine. With explicit skills and no profiles, there is no implicit default. Omitted previously owned skills remain installed and are reported as unselected.
 
-`--tui` opts into an interactive session on any command. It cannot be combined with `--json` and requires terminal input and output. The initial command uses the same configuration and result contracts. `apply --tui` requires explicit home and target and starts with read-only review. A session may run status, plan, doctor, validate, or apply. Moving from a clear plan to apply requires confirmation of the exact home and target roots, with Back selected by default. The UI supplies that confirmed scope explicitly to apply and rejects a changed review before fetching or writing. Existing transaction rechecks still protect the fetch and mutation phases. This confirmation is session-local, not an executable saved plan. Selection edits replace arrays, retain explicit skills, and do not persist configuration. Plain commands without `--tui` retain their existing behavior.
+The root command opens the inventory and both saved profile drafts. First live use requires `--profile client` or `--profile home-lab`; later use reads the saved machine configuration. Enter reviews the exact local file plan; `a` then `y` saves both shared profiles and machine configuration and applies only local files. Other installed skills outside the previous selection are retained. External members never grant file authority. Adoption and removal authority is session-local, not a public force flag.
+
+`lab-skills --dry-run` opens the same read-only inventory and profile draft. It never dispatches to apply or persists profiles, adopts skills, removes files, or downloads source payloads. Enter reviews hypothetical proposals only. It prints a table when input or output is not a terminal. It cannot be combined with a subcommand, `--tui` or `--json`. See [the inventory reference](reference.md#dry-run-inventory).
+
+`--tui` opts into an interactive session on any command. It cannot be combined with `--json` and requires terminal input and output. The initial command uses the same configuration and result contracts. `apply --tui` requires explicit home and target and starts with read-only review. A session may run status, plan, doctor, validate, or apply. Moving from a clear plan to apply requires confirmation of the exact home and target roots, with Back selected by default. The UI supplies that confirmed scope explicitly to apply and rejects a changed review before fetching or writing. Existing transaction rechecks still protect the fetch and mutation phases. This confirmation is session-local, not an executable saved plan. Selection edits replace arrays, retain explicit skills, and do not persist configuration. Existing subcommands without `--tui` retain their behavior.
 
 ## Configuration precedence
 
 CLI flags override the corresponding machine configuration fields, then defaults apply. Repeated flags replace configuration arrays, not append to them. Explicit --config FILE selects one JSON file. Otherwise, read LAB_SKILLS_CONFIG if set, then $XDG_CONFIG_HOME/lab-skills/config.json or $HOME/.config/lab-skills/config.json. Missing implicit configuration is allowed; missing explicit configuration is an error. Environment variables are read only by the entry boundary. They never override selection flags.
 
-Machine configuration schema 1: {"schema":1,"home":"/home/coder","profiles":["default"],"skills":[],"targets":["agents"],"archiveDir":"/optional/offline/archives"}. Only schema is mandatory. All paths must be absolute. Unknown configuration fields are errors. Default home is the invoking account's home for read-only commands. Default target is agents. apply requires both home and targets explicitly supplied in flags or configuration. validate requires neither.
+Machine configuration schema 1: {"schema":1,"home":"/home/coder","profiles":["home-lab"],"skills":[],"targets":["agents"],"archiveDir":"/optional/offline/archives"}. Only schema is mandatory. All paths must be absolute. Unknown configuration fields are errors. Default home is the invoking account's home for read-only commands. Default target is agents. apply requires both home and targets explicitly supplied in flags or configuration. validate requires neither.
 
 ## Sources and state
 
@@ -30,7 +35,7 @@ New state uses <home>/.local/state/lab-skills/state.json, schema 2, owner lloydr
 
 ## Results and diagnostics
 
-Readable terminal output is default. --json writes exactly one versioned result to stdout, including failures, and no progress text. Human error diagnostics go to stderr. Result schema: {schemaVersion:1, command, ok, exitCode, checkout, home?, selection:{profiles,skills,targets}, entries:[], diagnostics:[], sourceGit?}. Entry fields: id, path, status, source?, installedSource?, reason?. Desired and recorded source identities are both available for owned entries in JSON and interactive details. Status is new, current, update, conflict, unselected, unmanaged or applied. Diagnostic fields: code, severity, message, path?. Errors use stable codes, never string matching for control flow.
+Readable terminal output is default. --json writes exactly one versioned result to stdout, including failures, and no progress text. Human error diagnostics go to stderr. Result schema: {schemaVersion:1, command, ok, exitCode, checkout, home?, selection:{profiles,skills,targets}, entries:[], diagnostics:[], sourceGit?}. Entry fields: id, path, status, source?, installedSource?, reason?. Desired and recorded source identities are both available for owned entries in JSON and interactive details. Status is new, adopt, remove, current, update, conflict, unselected, unmanaged or applied. Diagnostic fields: code, severity, message, path?. Errors use stable codes, never string matching for control flow.
 
 Human entry lists use borderless Status, Skill, and Location tables. Cell contents wrap to the terminal width, including full destination paths. Very narrow terminals stack records. status retains every entry, plan shows changes and conflicts, apply shows installed changes or a no-op result, and doctor shows diagnostics without repeating normal entries. Compact results avoid empty panels. Warnings go to stdout and errors go to stderr, with stable codes, messages, and affected paths. Color is disabled for redirected streams, non-empty NO_COLOR, and TERM=dumb. JSON serialization and exit codes are unchanged.
 

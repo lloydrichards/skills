@@ -12,8 +12,8 @@ import {
   Terminal,
 } from "effect";
 import { renderHuman, renderText } from "./output.js";
-import { help } from "./commands.js";
-import { program } from "./program.js";
+import { help, parse } from "./commands.js";
+import { runCommand } from "./program.js";
 import { runtimeLayer } from "./runtime.js";
 import { Result } from "./model.js";
 
@@ -66,36 +66,48 @@ const run = Effect.fn("Cli.run")(function* (
       ...(config ? { config } : {}),
       ...(xdgConfig ? { xdgConfig } : {}),
     };
-    const operation =
-      argv.includes("--tui") || argv.some((arg) => arg.startsWith("--tui="))
-        ? Effect.flatMap(
-            Effect.promise(() => import("./tui/live.js")),
-            ({ interactive, inspectorTerminal }) =>
-              interactive(root, argv, environment).pipe(
-                Effect.provide(inspectorTerminal),
-              ),
-          ).pipe(
-            Effect.catchTag("LabError", (error) =>
-              Effect.succeed({
-                schemaVersion: 1,
-                command: argv[0] ?? "unknown",
-                ok: false,
-                exitCode: error.exitCode,
-                checkout: root,
-                selection: { profiles: [], skills: [], targets: [] },
-                entries: [],
-                diagnostics: [
-                  {
-                    code: error.code,
-                    severity: "error",
-                    message: error.message,
-                    ...(error.path ? { path: error.path } : {}),
-                  },
-                ],
-              } satisfies Result),
-            ),
-          )
-        : program(root, argv, environment);
+    let command = argv[0] ?? "inventory";
+    const operation = Effect.gen(function* () {
+      const flags = yield* parse(argv);
+      command = flags.command;
+      if (flags.command === "inventory") {
+        const { runInventory, inventoryTerminal } = yield* Effect.promise(
+          () => import("./tui/inventory.js"),
+        );
+        return yield* runInventory(root, flags, environment).pipe(
+          Effect.provide(inventoryTerminal),
+        );
+      }
+      if (flags.tui) {
+        const { interactive, inspectorTerminal } = yield* Effect.promise(
+          () => import("./tui/live.js"),
+        );
+        return yield* interactive(root, argv, environment).pipe(
+          Effect.provide(inspectorTerminal),
+        );
+      }
+      return (yield* runCommand(root, flags, environment)).result;
+    }).pipe(
+      Effect.catchTag("LabError", (error) =>
+        Effect.succeed({
+          schemaVersion: 1,
+          command,
+          ok: false,
+          exitCode: error.exitCode,
+          checkout: root,
+          selection: { profiles: [], skills: [], targets: [] },
+          entries: [],
+          diagnostics: [
+            {
+              code: error.code,
+              severity: "error",
+              message: error.message,
+              ...(error.path ? { path: error.path } : {}),
+            },
+          ],
+        } satisfies Result),
+      ),
+    );
     return yield* operation.pipe(Effect.provide(runtimeLayer(envPath)));
   }).pipe(
     Effect.catchCauseIf(
@@ -120,6 +132,7 @@ const run = Effect.fn("Cli.run")(function* (
         } satisfies Result),
     ),
   );
+  if (result.command === "inventory" && result.ok) return result.exitCode;
   yield* present(result, argv.includes("--json")).pipe(
     Effect.provide(runtimeLayer(envPath)),
   );

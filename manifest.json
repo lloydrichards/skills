@@ -302,49 +302,18 @@
     }
   },
   "profiles": {
-    "default": [
-      "behavioral-test-refactoring",
-      "comment-auditor",
-      "deslop",
-      "unslop",
-      "technical-writing",
-      "explain-diff",
-      "home-lab-workflow"
+    "client": [
+      "but",
+      "effect",
+      "make-pr",
+      "technical-writing"
     ],
-    "effect": [
-      "effect"
-    ],
-    "frontend": [
-      "impeccable"
-    ],
-    "learning": [
-      "learn"
-    ],
-    "explanations": [
-      "teach",
-      "show-me"
-    ],
-    "advanced": [
-      "gauntlet-loop",
-      "arena",
-      "swarm",
-      "blast-radius",
-      "engineering-principles",
-      "grilling",
-      "handoff",
-      "research",
-      "retro",
-      "improve-codebase-architecture"
-    ],
-    "releases": [
-      "changeset",
-      "make-pr"
-    ],
-    "llm": [
-      "prompt-engineering-patterns"
-    ],
-    "mutation-audits": [
-      "mutation-test-loop"
+    "home-lab": [
+      "but",
+      "effect",
+      "home-lab-workflow",
+      "make-pr",
+      "technical-writing"
     ]
   },
   "external": {

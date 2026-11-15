@@ -150,13 +150,15 @@ export const apply = Effect.fn("Apply.run")(function* (
   const changes = initial.jobs.filter((job) =>
     initial.entries.some(
       (entry) =>
-        entry.id === job.id && ["new", "update"].includes(entry.status),
+        entry.id === job.id &&
+        ["new", "update", "adopt", "remove"].includes(entry.status),
     ),
   );
   if (!changes.length) return initial;
   const payloads = new Map<string, Record<string, Uint8Array>>();
   for (const job of changes)
-    payloads.set(job.id, yield* fetchPayload(catalog, job, options));
+    if (!job.remove)
+      payloads.set(job.id, yield* fetchPayload(catalog, job, options));
   const location = initial.location;
   // The mutating region is uninterruptible by Effect. SIGKILL/power loss still needs the journal.
   return yield* Effect.gen(function* () {
@@ -229,53 +231,62 @@ export const apply = Effect.fn("Apply.run")(function* (
           parent,
           ".lab-skills-backup-" + token + "-" + path.basename(job.destination),
         );
-        yield* disk.mkdir(stage, false);
-        staged.push(stage);
-        yield* disk.chmod(stage, job.tree.rootMode);
-        for (const dir of job.tree.directories) {
-          yield* disk.mkdir(path.join(stage, dir), true);
-          yield* disk.chmod(
-            path.join(stage, dir),
-            job.tree.directoryModes[dir] ?? 0o755,
-          );
-        }
-        const payload = payloads.get(job.id);
-        if (!payload)
-          return yield* problem("APPLY_FAILED", "Prepared payload missing", 1);
-        for (const [file, data] of Object.entries(payload)) {
-          const meta = job.tree.files[file];
-          if (!meta)
+        if (!job.remove) {
+          yield* disk.mkdir(stage, false);
+          staged.push(stage);
+          yield* disk.chmod(stage, job.tree.rootMode);
+          for (const dir of job.tree.directories) {
+            yield* disk.mkdir(path.join(stage, dir), true);
+            yield* disk.chmod(
+              path.join(stage, dir),
+              job.tree.directoryModes[dir] ?? 0o755,
+            );
+          }
+          const payload = payloads.get(job.id);
+          if (!payload)
             return yield* problem(
               "APPLY_FAILED",
-              "Prepared file metadata missing",
+              "Prepared payload missing",
               1,
             );
-          yield* disk.write(
-            path.join(stage, file),
-            data,
-            meta.executable,
-            true,
-          );
+          for (const [file, data] of Object.entries(payload)) {
+            const meta = job.tree.files[file];
+            if (!meta)
+              return yield* problem(
+                "APPLY_FAILED",
+                "Prepared file metadata missing",
+                1,
+              );
+            yield* disk.write(
+              path.join(stage, file),
+              data,
+              meta.executable,
+              true,
+            );
+          }
+          if (!equal(yield* inventory(stage), job.tree))
+            return yield* problem(
+              "HASH_MISMATCH",
+              "Staged payload differs from plan",
+              1,
+              stage,
+            );
         }
-        if (!equal(yield* inventory(stage), job.tree))
-          return yield* problem(
-            "HASH_MISMATCH",
-            "Staged payload differs from plan",
-            1,
-            stage,
-          );
-
-        const next = { tree: job.tree, source: job.source },
-          old = initial.state.installations[job.id];
+        const next = job.remove
+            ? undefined
+            : { tree: job.tree, source: job.source },
+          old = job.missing ? undefined : initial.state.installations[job.id];
         items.push({
           id: job.id,
           destination: job.destination,
           stage,
           backup,
-          next,
+          ...(next ? { next } : {}),
+          ...(job.adopted ? { adopted: job.adopted } : {}),
           ...(old ? { old } : {}),
         });
-        records[job.id] = next;
+        if (next) records[job.id] = next;
+        else delete records[job.id];
       }
       const finalCatalog = yield* validate(root);
       if (!equal(catalog, finalCatalog))
@@ -318,8 +329,9 @@ export const apply = Effect.fn("Apply.run")(function* (
       yield* writeJSON(location.journal, journal);
       for (const item of items) {
         yield* noLinks(item.destination);
-        if (item.old) {
-          if (!equal(yield* inventory(item.destination), item.old.tree))
+        const previousTree = item.old?.tree ?? item.adopted;
+        if (previousTree) {
+          if (!equal(yield* inventory(item.destination), previousTree))
             return yield* problem(
               "LOCAL_EDIT",
               "Installation changed immediately before replacement",
@@ -342,6 +354,7 @@ export const apply = Effect.fn("Apply.run")(function* (
           yield* disk.mkdir(item.destination, false);
           reserved.push(item);
         }
+        if (!item.next) continue;
         const renamed = yield* disk
           .rename(item.stage, item.destination)
           .pipe(Effect.result);
@@ -384,7 +397,7 @@ export const apply = Effect.fn("Apply.run")(function* (
       const rollback = yield* Effect.exit(
         Effect.gen(function* () {
           for (const item of [...installed].reverse()) {
-            if (!equal(yield* inventory(item.destination), item.next.tree))
+            if (!equal(yield* inventory(item.destination), item.next?.tree))
               return yield* problem(
                 "ROLLBACK_FAILED",
                 "Destination changed; preserve it and backup for manual recovery",
@@ -445,8 +458,11 @@ export const apply = Effect.fn("Apply.run")(function* (
         for (const item of backedUp) {
           if (yield* disk.info(item.backup)) {
             if (
-              !item.old ||
-              !equal(yield* inventory(item.backup), item.old.tree)
+              !(item.old?.tree ?? item.adopted) ||
+              !equal(
+                yield* inventory(item.backup),
+                item.old?.tree ?? item.adopted,
+              )
             )
               return yield* problem(
                 "INTERRUPTED_OPERATION",

@@ -25,9 +25,9 @@ Preview the real account read-only:
 ```sh
 node apps/lab-skills/bin/lab-skills.mjs validate --json
 node apps/lab-skills/bin/lab-skills.mjs plan \
-  --home "$HOME" --profile default --profile effect --target agents --json
+  --home "$HOME" --profile home-lab --target agents --json
 node apps/lab-skills/bin/lab-skills.mjs doctor \
-  --home "$HOME" --profile default --profile effect --target agents --json
+  --home "$HOME" --profile home-lab --target agents --json
 ```
 
 These commands do not create machine configuration or ownership state. Existing unowned installations, Python state or interrupted operations can return exit 3. Preserve the output for review; do not clear conflicts by deleting originals. Runtime discovery and any later adoption/install action remain separate decisions. The same read-only preview can select pi or opencode destinations without changing their configuration.

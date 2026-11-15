@@ -70,12 +70,12 @@ For a persistent machine selection, create the machine-local file only after rev
 {
   "schema": 1,
   "home": "/home/coder",
-  "profiles": ["default", "effect"],
+  "profiles": ["home-lab"],
   "targets": ["agents"]
 }
 ```
 
-Its default location is `$XDG_CONFIG_HOME/lab-skills/config.json`, or `$HOME/.config/lab-skills/config.json`. CLI fields override its corresponding fields. An explicit `--config` overrides `LAB_SKILLS_CONFIG`. No configuration file is created automatically. apply requires an explicit home and target through configuration or flags.
+Its default location is `$XDG_CONFIG_HOME/lab-skills/config.json`, or `$HOME/.config/lab-skills/config.json`. CLI fields override its corresponding fields. An explicit `--config` overrides `LAB_SKILLS_CONFIG`. The root inventory creates this configuration only after a confirmed live save. Existing subcommands do not create it automatically. apply requires an explicit home and target through configuration or flags.
 
 Read [the contract](contract.md) before using apply and [the recovery procedure](recovery.md) if doctor reports interrupted operations. Existing Mac directories are not automatically adopted. Python ownership state blocks mutation and needs a separately reviewed migration.
 
@@ -90,7 +90,7 @@ bun run tui
 The initial view uses the current home, profiles, skills, and targets from the normal configuration resolver. It shows actual ownership state, changes, and diagnostics. Add the normal flags to choose another scope:
 
 ```sh
-bun run tui --home /home/lloyd --profile default --profile effect --target agents
+bun run tui --home /home/lloyd --profile home-lab --target agents
 ```
 
 After building, use `--tui` with any command:

@@ -4,11 +4,19 @@ import { Disk } from "./services.js";
 import { json, noLinks } from "./files.js";
 import { problem } from "./error.js";
 
-export type Command = "validate" | "status" | "plan" | "apply" | "doctor";
+export type Command =
+  | "inventory"
+  | "validate"
+  | "status"
+  | "plan"
+  | "apply"
+  | "doctor";
 export interface Flags {
   command: Command;
   json: boolean;
   tui?: boolean;
+  dryRun?: boolean;
+  ascii?: boolean;
   home?: string;
   profiles?: ReadonlyArray<string>;
   skills?: ReadonlyArray<string>;
@@ -45,7 +53,8 @@ export const configure = Effect.fn("Configuration.resolve")(function* (
     Effect.mapError((e) => problem("CONFIG_INVALID", e.message, 2, e.path)),
   );
   let config: MachineConfig = { schema: 1 };
-  if (yield* disk.info(configPath))
+  const configExists = Boolean(yield* disk.info(configPath));
+  if (configExists)
     config = yield* decode(MachineConfig)(
       yield* json(configPath, "CONFIG_INVALID", 2),
     ).pipe(
@@ -97,6 +106,9 @@ export const configure = Effect.fn("Configuration.resolve")(function* (
     );
 
   return {
+    configPath,
+    configExists,
+    config,
     home: path.normalize(home),
     selection: {
       profiles: [...new Set(profiles)],

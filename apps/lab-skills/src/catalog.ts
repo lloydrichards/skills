@@ -67,14 +67,17 @@ export const selection = (
       );
       const members = Object.hasOwn(manifest.profiles, profile)
         ? manifest.profiles[profile]
-        : undefined;
+        : profile === "default" && Object.hasOwn(manifest.profiles, "client")
+          ? manifest.profiles["client"]
+          : undefined;
       if (!members)
         return yield* problem(
           "MANIFEST_INVALID",
           `Unknown profile ${profile}`,
           2,
         );
-      for (const name of members) yield* visit(name);
+      for (const name of members)
+        if (!Object.hasOwn(manifest.external, name)) yield* visit(name);
     }
     for (const name of requested.skills) yield* visit(name);
     return result;

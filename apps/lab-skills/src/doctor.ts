@@ -179,7 +179,8 @@ export const doctor = Effect.fn("Doctor.inspect")(function* (
           });
           continue;
         }
-        yield* verifyTree(item.next.tree, location.journal);
+        if (item.next) yield* verifyTree(item.next.tree, location.journal);
+        if (item.adopted) yield* verifyTree(item.adopted, location.journal);
         if (item.old) yield* verifyTree(item.old.tree, location.journal);
         for (const [kind, file] of [
           ["destination", item.destination],
@@ -190,10 +191,12 @@ export const doctor = Effect.fn("Doctor.inspect")(function* (
           const actual = yield* inventory(file).pipe(Effect.result);
           const oldMatch =
             actual._tag === "Success" &&
-            !!item.old &&
-            equal(actual.success, item.old.tree);
+            !!(item.old?.tree ?? item.adopted) &&
+            equal(actual.success, item.old?.tree ?? item.adopted);
           const newMatch =
-            actual._tag === "Success" && equal(actual.success, item.next.tree);
+            actual._tag === "Success" &&
+            !!item.next &&
+            equal(actual.success, item.next.tree);
           diagnostics.push({
             code: "INTERRUPTED_OPERATION",
             severity: "error",
