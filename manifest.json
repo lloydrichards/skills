@@ -309,10 +309,16 @@
       "technical-writing"
     ],
     "home-lab": [
+      "behavioral-test-refactoring",
+      "bro",
       "but",
+      "comment-auditor",
       "effect",
+      "gauntlet-loop",
+      "grilling",
       "home-lab-workflow",
       "make-pr",
+      "swarm",
       "technical-writing"
     ]
   },
