@@ -61,3 +61,9 @@ Additional maintained adaptations:
 - `engineering-principles`: backnotprop/pstack, explicitly recorded revision 157aae39a733135e93d8b5b19ff62c6a84b0ad56. Custom wrapper, repackaged references and relative-link adjustments. See LICENSE.upstream.
 
 Exact upstream paths, immutable commits, file hashes, executable flags and baseline qualifications for manifest-only installations are in sources.lock.json. A comparison baseline is not proof of an original installation revision. Candidate snapshots are outside this public source tree and receive no new ownership or license claim here.
+
+## skill-doctor
+
+`skills/skill-doctor` is a modified adaptation of `warpdotdev/common-skills` at `.agents/skills/skill-doctor`. The original installed revision is unknown. Changes include collection scope, harness support, evidence requirements and report presentation. The upstream MIT notice is retained in `skills/skill-doctor/UPSTREAM-LICENSE`.
+
+The bundled `assets/pierre-diffs.js` uses @pierre/diffs and its bundled dependencies. The Pierre Apache 2.0 license is retained in `assets/PIERRE-LICENSE`. The existing bundle is preserved unchanged.
