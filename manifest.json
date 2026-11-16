@@ -299,6 +299,16 @@
       "dependencies": [
         "report-builder"
       ]
+    },
+    "skill-doctor": {
+      "ownership": "maintained-adaptation",
+      "source": {
+        "local": "skills/skill-doctor"
+      },
+      "dependencies": [],
+      "prerequisites": [
+        "Python 3.9+; supported local conversation storage; see references/supported-harnesses.md"
+      ]
     }
   },
   "profiles": {
@@ -332,10 +342,6 @@
   },
   "candidates": {
     "skill-creator": {
-      "installable": false,
-      "reason": "Locally modified third-party fork deferred pending an explicit maintenance decision; preserved separately."
-    },
-    "skill-doctor": {
       "installable": false,
       "reason": "Locally modified third-party fork deferred pending an explicit maintenance decision; preserved separately."
     },

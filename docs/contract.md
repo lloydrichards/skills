@@ -102,6 +102,6 @@ Destination overlap checks resolve physical existing ancestors, including filesy
 
 ## Maintained source boundary
 
-Keep the eight previously tracked skills and the deliberate deslop, unslop and engineering-principles adaptations in source. Large optional skill-creator, skill-doctor and install-anti-slop forks are deferred and cannot be selected. rubber-duck uses the immutable upstream source without the local metadata overlay. Optional third-party instructions remain manifest-only.
+Keep the eight previously tracked skills and the deliberate deslop, unslop and engineering-principles adaptations in source. skill-doctor is a maintained local adaptation available for explicit selection. Large optional skill-creator and install-anti-slop forks are deferred and cannot be selected. rubber-duck uses the immutable upstream source without the local metadata overlay. Optional third-party instructions remain manifest-only.
 
 For local sources, root LICENSE and NOTICE.md files, when present, become generated COLLECTION-LICENSE.txt and COLLECTION-NOTICE.md payload files. Their hashes participate in the desired content identity. Planning only reads these files. Apply bundles them into owned copies; the source folders do not carry duplicate collection notices. An authored file colliding with a generated notice is a source error. Required per-skill upstream licenses remain intact.
