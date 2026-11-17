@@ -1,4 +1,4 @@
-# Behavioral Test-Smell Guide
+# Behavioral test-smell guide
 
 Use this guide as a set of investigation prompts. A smell is not proof that a test should disappear: each one can protect a real boundary.
 
@@ -20,7 +20,7 @@ Keep it in a named capability/profile or adapter suite when the behaviour is int
 
 A test describes an old bug but the reason it must remain is not apparent.
 
-Locate an issue, release note, specification, or durable local explanation. If none is available, ask a human before changing it.
+Locate an issue, release note, specification, or durable local explanation. Preserve the regression and defer any deletion or contract change when its intent remains unclear. Missing provenance alone does not justify removal.
 
 ## Behaviour and naming smells
 
@@ -28,7 +28,7 @@ Locate an issue, release note, specification, or durable local explanation. If n
 
 The name repeats a method name, helper, or internal branch without saying what a caller observes.
 
-Rename it to `should <outcome> when <condition>`. If that sentence cannot be formed, the test may be misplaced or the production responsibility unclear.
+Follow the repository naming convention and state the observable outcome and relevant condition. Without a local convention, `should <outcome> when <condition>` is a useful default. If the behaviour cannot be stated, investigate its ownership before renaming.
 
 ### False BDD
 
@@ -84,11 +84,31 @@ Keep a snapshot only for a deliberate stable output surface. Otherwise assert th
 
 ## Safe decision guide
 
-| Finding | Usual decision | Exception |
-| --- | --- | --- |
-| General behaviour already covered by shared suite | move or delete | local suite proves an additional observable invariant |
-| Separate conditions of one outcome | combine or table-drive only when equivalence is evidenced | use human decision when the prompt/code does not establish whether conditions have distinct semantics |
-| Several independent outcomes | split | outcomes are inseparable parts of one transaction |
-| Mock call order | replace or flag | protocol interaction/order is public contract |
-| Quirky regression | human decision | documented issue/spec proves an intentional contract |
-| Incidental snapshot | replace or flag | reviewed public rendering/serialization contract |
+| Finding                                           | Usual decision                                            | Exception                                                                                             |
+| ------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| General behaviour already covered by shared suite | move or delete                                            | local suite proves an additional observable invariant                                                 |
+| Separate conditions of one outcome                | combine or table-drive only when equivalence is evidenced | use human decision when the prompt/code does not establish whether conditions have distinct semantics |
+| Several independent outcomes                      | split                                                     | outcomes are inseparable parts of one transaction                                                     |
+| Mock call order                                   | replace or flag                                           | protocol interaction/order is public contract                                                         |
+| Quirky regression                                 | human decision                                            | documented issue/spec proves an intentional contract                                                  |
+| Incidental snapshot                               | replace or flag                                           | reviewed public rendering/serialization contract                                                      |
+
+## Development artifacts and edge cases
+
+### Retired prototype or exploratory probe
+
+A test protects a superseded implementation or a temporary investigation rather than a maintained workflow. Establish that the artifact is obsolete and that useful assertions have a retained owner before deleting it. For generated-source assertions, establish the exact supported artifact property and consumer before deciding whether the check is obsolete.
+
+### Speculative input variation
+
+Several inputs exercise the same promise without detecting distinct failures. Keep meaningful examples in a labelled parameterized case where equivalence is established. Assess rare cases by reachability and consequence; preserve consequential failures and demonstrated regressions rather than applying a frequency cutoff.
+
+### Passing without detecting the defect
+
+A test can pass because its fake supplies the expected result or its assertions never observe the relevant production behaviour. Use a focused negative control when needed. One successful mutation check establishes sensitivity to that defect, not the value of the contract or equivalence with another test.
+
+### Generated-source spelling mistaken for a contract
+
+A test requires a helper name, statement order, or source fragment merely because the product generates code. Ask whether a semantics-preserving rename or reformat would break a supported consumer. If not, compare the check with retained compilation, execution, or API-contract coverage and recommend removing or replacing only the incidental assertion.
+
+Do not apply this reasoning to documented exports/import paths, tool-consumed configuration, required dependency absence, registration metadata, or preservation of user-authored bytes without examining their distinct consumers. Unknown compatibility requires a focused decision, not a blanket rule to keep or delete source checks.

@@ -1,97 +1,84 @@
 ---
 name: behavioral-test-refactoring
 description: |
-  Audit and refactor existing unit and contract test suites so they express observable behaviour with high signal. Use when the user asks to tidy, clean up, consolidate, simplify, reduce duplication in, rename, review, or refactor tests; make tests BDD-style or behaviour-focused; or reduce test noise after a feature. Prefer a repository's designated test-audit workflow unless the user explicitly requests this workflow. Start with a read-only behaviour audit unless the user explicitly authorizes edits. Implementation-coupled mocks, duplicate test layers, overly large test files, unclear test names, and feature-end test accumulation are signals to consider it.
+  Audit and refactor existing tests around observable behaviour. Use for test cleanup, consolidation, behaviour-focused review, or a requested pre-PR review of accumulated tests. Prefer a repository's designated test-audit workflow unless explicitly requested. Audit requests stay read-only; cleanup requests authorize supported test refactoring.
 metadata:
-  version: "0.1.0"
+  version: "0.3.0"
 ---
 
-# Behavioral Test Hygiene
+# Behavioral test hygiene
 
-Improve a test suite's ability to communicate and protect observable behaviour. Test code is a maintained product: reducing it is worthwhile only when every removed or combined test has a clear behavioural owner.
-
-This is not a test-framework setup guide, a coverage-maximization exercise, or a request to convert every test to Gherkin. For Effect mechanics—layers, deterministic time, concurrency, fakes, and assertions—use the existing `effect` skill as well.
+Retain tests that protect maintained behaviour and make failures useful to diagnose. Test counts, test-to-production line ratios, coverage percentages, and DRY alone do not establish value or redundancy.
 
 ## Scope and authority
 
-Read repository testing guidance first. When it assigns existing-test audits to a local skill, follow that workflow instead of running this audit as well. Use this workflow there only when the user explicitly requests it. Local test-selection policy, runner commands, and evidence requirements still apply.
+Read repository testing guidance first. Follow its designated audit workflow unless the user explicitly requests this one. Local test selection, runner commands, and evidence requirements still apply. Use the `effect` skill for Effect-specific testing mechanics when needed.
 
-Prioritize unit and contract suites. Include an integration suite only when it expresses a stable service or adapter boundary. Do not redesign E2E, property, performance, or visual suites in v1 unless the user narrows the request to one of them.
+Audit and review requests are read-only. When the user has already authorized cleanup or refactoring, audit first, then apply supported test-only decisions without asking again. Ask only for unresolved contract decisions or changes beyond the authorized scope. Do not infer permission to change production behaviour, redesign shared suites, or alter test commands from a test-cleanup request.
 
-Default to **Audit** mode. Do not edit tests, production code, shared suite architecture, or test commands until the user explicitly asks to apply the plan.
+Prioritize unit and contract suites. A requested PR audit may trace integration and generated-project fixtures to establish coverage ownership across layers. Redesign of E2E, property, performance, or visual suites requires that scope in the request.
 
-Treat these as human decisions, not cleanup opportunities:
+Preserve historical regressions, compatibility cases, and disputed policies when their intended contract is unresolved. Record a `human decision` rather than silently deleting or redefining them. A missing issue link is reason to investigate, not proof of low value.
 
-- historical regressions and quirky compatibility cases;
-- undocumented or disputed policies;
-- a change that needs a new shared contract suite or a production seam;
-- a test whose value cannot be established from the code, issue, specification, or maintainers' documented intent.
+## Establish scope and ownership
 
-Flag them as `human decision`. Do not silently delete, merge, or rewrite them.
+Read the production API, in-scope tests, nearby coverage, and repository instructions. Search for existing shared conformance, capability/profile, and cross-adapter suites before judging duplication. Do not infer a portable contract from one implementation.
 
-## Workflow
-
-### 1. Establish the contract boundary
-
-Read the current diff, the production API, the requested test files, nearby tests, and repository instructions. Search for existing shared conformance suites, capability/profile suites, and cross-adapter tests before judging duplication.
+For a pre-PR pass, establish the intended base and distinguish added, modified, moved, and pre-existing tests newly selected by CI. Inspect executable scenarios inside fixtures and generated projects, not just top-level test declarations. Expand beyond changed tests only to establish their existing coverage owners.
 
 For each test or cohesive cluster, identify:
 
-- the observable promise;
-- its condition and test level;
-- its current owner: public/portable contract, adapter or implementation invariant, integration boundary, regression, or artifact;
-- the evidence for that ownership.
+- the observable promise and relevant condition;
+- the plausible defect it detects;
+- its owner: public/portable contract, adapter invariant, integration boundary, regression, or artifact;
+- the evidence supporting that ownership and retention decision.
 
-Do not infer a portable contract from one host implementation. Keep unresolved policy visible rather than crystallizing it into a baseline test.
+Judge edge cases by reachability, consequence, and provenance. Rare data-loss, security, cancellation, and compatibility failures can deserve permanent coverage. A speculative internal branch or arbitrary input variation needs a maintained promise or distinct failure mode to justify its cost.
 
-### 2. Produce the audit before proposing edits
+## Decide what belongs in the durable suite
 
-After an optional one-line title or scope/mode statement, put this compact table first. One row can cover a truly inseparable cluster; otherwise use one row per test. Use the `Decision` heading and exactly one approved decision value per row.
+Account for every in-scope test within a named behaviour cluster. Use `keep`, `combine`, `move`, `delete`, `split`, or `human decision`, with file/test references and evidence. This table is a useful default, not a required output format:
 
-| Test or cluster | Observable behaviour | Current owner | Decision | Evidence and risk |
-| --- | --- | --- | --- | --- |
-| `…` | `…` | contract / adapter / integration / regression / artifact | keep / combine / move / delete / split / human decision | `…` |
+| Test or cluster | Observable behaviour and defect | Owner | Decision | Evidence and risk |
+| --------------- | ------------------------------- | ----- | -------- | ----------------- |
+| `…`             | `…`                             | `…`   | `…`      | `…`               |
 
-Then show the proposed suite shape, grouped by behaviour. State which coverage moves to an existing shared suite and which remains local. Do not use test-line counts, coverage percentage, or DRY alone as the reason for a decision.
+Summarize routine retained coverage by cluster. Expand risky deletions and disputed ownership. Describe the proposed suite shape where it changes, including which existing shared suite receives moved coverage.
 
-### 3. Apply behaviour-first design rules
+Look for obsolete prototype tests, exploratory probes, framework restatements, expectations computed by the production algorithm, and checks that only prove a mock was configured. Remove them only when evidence establishes that they protect no maintained behaviour or a retained test detects the same defect. Interaction assertions remain useful when the interaction itself is a supported protocol contract. For generated source, establish the specific artifact contract below rather than treating all emitted text as durable.
 
-- Name every in-scope executable test strictly: `should <observable outcome> when <relevant condition>`.
-- A test may contain several assertions when they jointly prove one observable promise. Split it when a failure would identify independent behaviour or would be diagnosed separately.
-- Combine tests only when the supplied evidence establishes that they exercise the same promise at the same ownership layer. When equivalence cannot be established, use `human decision` rather than a conditional `combine`. Do not merge unrelated success, failure, lifecycle, cancellation, timing, idempotency, or concurrency behaviour merely to shorten a file.
-- Prefer outputs, public errors, emitted events, and state exposed by the service boundary over private state, incidental call order, or mock choreography.
-- Replace a mock/spy assertion with a real collaborator or bounded fake only when the resulting observable contract stays clear and inexpensive. Otherwise flag the coupling and explain why it remains.
-- Keep snapshots only when they intentionally protect a reviewed public output or format. Flag incidental snapshots for an explicit assertion or a human decision.
-- Extract or merge helpers only when they name a repeated domain concept. Leave local setup local when abstraction would hide the scenario.
-- Preserve deterministic setup. Treat sleeps, uncontrolled polling, external production data, and order-dependent state as design defects; use the repository's testing guidance to repair them.
+Read [references/test-smells.md](references/test-smells.md) when judging a smell or exception.
 
-Read `references/test-smells.md` when judging a smell or exception.
+## Establish a generated-source contract
 
-### 4. Gate refactoring and proof
+For each source-text, AST, or snapshot assertion, name the supported artifact property, its consumer, and the failure that changing it would cause. Evidence can be a documented generated API, configuration/file layout required by a tool, a user-edit preservation rule, or a concrete regression. The assertion itself and the fact that source is emitted are not evidence of a compatibility promise.
 
-After an audit, ask for approval to apply the proposed decisions. When authorized:
+Use a semantics-preserving change as a check: could a private helper be renamed, statements reordered, or formatting changed while supported imports, compilation, execution, and user edits still work? An assertion that fails only for such a change usually protects implementation spelling. Identify its retained behavioural/type-check owner, or replace it with the supported property, before recommending removal. If consumer compatibility is genuinely unresolved, defer that decision with the missing evidence; do not automatically keep every emitted identifier as public API.
 
-1. Make small, reviewable test-only batches.
-2. Run the focused test command before and after a non-trivial batch where practical.
-3. For a risky deletion or merge, perform a targeted proof when practical: make the relevant behaviour fail temporarily, or demonstrate its existing shared/public owner. Restore the workspace immediately after any deliberate mutation.
-4. Run available formatting and type checks plus the focused suite. Report broader checks separately when unavailable, blocked, or outside the approved scope.
+Keep source assertions for supported export names/import paths, required registration/configuration, machine-read markers, or byte preservation where those exact properties matter. Runtime checks cannot replace compile-time API constraints, absence of a forbidden dependency, or preservation of a user's file. Conversely, source presence alone does not establish that a capability actually runs. Prefer the smallest assertion at the boundary that owns the promise; do not add a second execution environment merely to replace an inexpensive, meaningful artifact check.
 
-Do not claim that a rename-only change proves coverage. Do not alter production code or create a shared suite without separate approval.
+## Refactor around behaviour
 
-## Refactor report
+- Follow repository naming conventions. Otherwise prefer an observable outcome and relevant condition, such as `should <outcome> when <condition>`. Do not rename unrelated tests to satisfy a template.
+- Keep several assertions together when they prove one atomic outcome. Split independent promises when separate failures improve diagnosis.
+- Combine equivalent examples only with evidence that they protect the same promise at the same ownership layer. Parameterize meaningful inputs with diagnostic case labels. Preserve distinct failure, lifecycle, timing, cancellation, idempotency, and concurrency behaviours.
+- Prefer public outputs, errors, events, and boundary state over private state, incidental call order, and mock choreography. Replace coupled mocks with a real collaborator or bounded fake only when that keeps the contract clear and inexpensive.
+- Keep snapshots for intentional, reviewed public outputs or formats. Replace incidental snapshots with meaningful assertions when their contract is established; otherwise defer the decision.
+- Extract helpers only when they name repeated domain concepts. Keep scenario-defining setup visible.
+- Preserve deterministic setup. Repair sleeps, uncontrolled polling, external production data, and order-dependent state using repository guidance.
+- Do not add speculative edge cases during hygiene work. Report a concrete uncovered failure separately; add its regression test when the request authorizes it.
 
-After an applied refactor, report:
+## Verify changes and coverage ownership
 
-- the original and final behaviour ownership;
-- tests kept, combined, moved, deleted, split, and deferred;
-- exact checks run and their results;
-- proof used for risky consolidation or deletion;
-- human decisions and remaining risks.
+When edits are authorized:
 
-Keep the report concise. Its purpose is to make review of lost or moved coverage possible.
+1. Make small, reviewable test-only batches. Run the focused suite before and after non-trivial changes where practical.
+2. For a risky deletion or merge, identify the removed assertion's protected defect and the retained test that detects it. Use a targeted negative control when practical, or show concrete equivalent assertions and exercised paths. Defer deletion when evidence remains insufficient. For an obsolete artifact, establish that no maintained workflow depends on it.
+3. Restore temporary mutations immediately, preserving pre-existing edits. A mutation proves sensitivity to that defect only; it does not establish complete equivalence or justify the contract's importance. Passing tests and rename-only changes do not prove redundancy.
+4. Run the focused suite and applicable formatting/type checks. Distinguish completed checks from unavailable or out-of-scope checks.
 
-## Completion criteria
+Report changed ownership, decisions applied or deferred, exact checks and results, and proof limits for lost or moved assertions. Do not turn a focused cleanup into a whole-suite mutation campaign.
 
-An audit is complete when every in-scope test has an observable behaviour and a decision, the table identifies human decisions, and the proposed suite shape has no unexplained duplication.
+## Completion
 
-An applied refactor is complete when every in-scope name follows `should … when …`, changed tests preserve their stated observable contracts, the agreed focused validation has run, and unresolved exceptions remain visible.
+Finish when every in-scope test belongs to an accounted-for cluster, every removed assertion has a retained detector or an evidenced obsolete-artifact rationale, authorized validation has run, and unresolved decisions remain visible. Keep the report proportional to the change and stop at the agreed scope.
