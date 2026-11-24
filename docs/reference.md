@@ -29,7 +29,7 @@ Git inspection does not invoke git status, clean/process filters, fsmonitor hook
 
 Local generated copies include COLLECTION-LICENSE.txt and COLLECTION-NOTICE.md from the repository root when present. These files are hashed, ownership-checked and updated like other payload files. They are not duplicated in authored skill directories; colliding authored files are rejected.
 
-The core profiles include make-pr and its changeset, technical-writing and unslop dependencies. `--skill mutation-test-loop` selects mutation-test-loop. The but skill and authenticated GitButler CLI remain external prerequisites, not installer-managed dependencies. Mutation evaluation 1 uses a disposable copy of the bundled booking fixture instead of a machine-specific checkout. Its supplied ledger is historical example evidence, not proof of a new campaign.
+The core profiles include make-pr and its changeset, technical-writing and unslop dependencies. `--skill mutation-test-loop` selects mutation-test-loop. The but skill and authenticated GitButler CLI remain external prerequisites, not installer-managed dependencies. Mutation-test-loop runs StrykerJS (10.1 or newer for Vitest 5) and needs network access to install it, unless the target project already has it. Its booking fixture evaluations run `npm install` in a disposable copy, so run them with `--allow-host-tools`.
 
 ## Dry-run inventory
 
