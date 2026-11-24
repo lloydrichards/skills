@@ -288,7 +288,7 @@
       },
       "dependencies": [],
       "prerequisites": [
-        "Fresh subagent delegation and the target project test runner; behavioral-test-refactoring is optional for broad suite redesign"
+        "StrykerJS with the target project's test runner (Vitest runner 10.1+ for Vitest 5), installed per project or via npx; behavioral-test-refactoring is optional for broad suite redesign"
       ]
     },
     "home-lab-workflow": {
