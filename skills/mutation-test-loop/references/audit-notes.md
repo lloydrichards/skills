@@ -118,10 +118,11 @@ against the missing regression.
 - A complete campaign has a passing `finalSuiteRun`,
   `worktreeOnlyIntendedChanges: true`, and a `worktreeNote`.
 - A complete `audit-and-rewrite` campaign has `reports.after` and no open gap
-  without `openReason`. In `audit-only` there is one run: omit `reports.after`
-  and `score.after`.
-- An `audit-only` campaign has no `killed` clusters and no `resolved` tests,
-  because nothing was rewritten.
+  without `openReason`. In `audit-only` there is one run, so `reports.after`
+  and `score.after` are optional and normally omitted.
+- An `audit-only` campaign has no `killed` gap clusters and no tests resolved by
+  a rewrite or rename, because nothing was rewritten.
+- Every `blind_spot` has `source` and `evidence`.
 - A blocked campaign names its reason.
 
 The validator checks structure and consistency, not whether the evidence is

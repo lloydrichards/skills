@@ -1,6 +1,6 @@
 ---
 name: mutation-test-loop
-description: Find tests that would not catch a real regression and rewrite them to observe behaviour. Runs a mutation tool (StrykerJS for TypeScript/JavaScript with Vitest) to generate and score mutants, then spends the model's effort triaging survivor clusters, judging equivalent or noisy mutants, and strengthening tests with fast incremental re-runs. Use when the user says not to trust tests that have never failed, asks whether tests actually test behaviour, requests a mutation audit, mutation score, false-positive or survivor review, or wants weak tests hardened with mutation evidence. Do not use for ordinary test runs, coverage reports alone, or test cleanup without a mutation question; use behavioral-test-refactoring for broad suite redesign.
+description: Find tests that would not catch a real regression, and optionally rewrite them to observe behaviour. Runs a mutation tool (StrykerJS for TypeScript/JavaScript with Vitest) to generate and score mutants, then spends the model's effort triaging survivor clusters, judging equivalent or noisy mutants, and strengthening tests with fast incremental re-runs. Use when the user says not to trust tests that have never failed, asks whether tests actually test behaviour, requests a mutation audit, mutation score, false-positive or survivor review, or wants weak tests hardened with mutation evidence. Do not use for ordinary test runs, coverage reports alone, or test cleanup without a mutation question; use behavioral-test-refactoring for broad suite redesign.
 ---
 
 # Mutation Test Loop
@@ -90,7 +90,9 @@ Two helpers answer questions the triage view cannot:
 
   To show that one test is weak on its own, append that test's filter (for
   Vitest, `-t "<exact name>"`) and check the output registered exactly one
-  test, not zero.
+  test, not zero. The script first runs the tests on the unchanged copy and
+  exits 2 if they already fail there, so a broken copy never reads as
+  `CAUGHT`. Exit codes: 0 `CAUGHT`, 1 `MISSED`, 2 setup error.
 
 With `--md`, the summary script writes the view to that file and prints a
 one-line summary; without it, the view goes to stdout. Mutant keys for the
@@ -131,8 +133,8 @@ Then review the tests themselves, still per test file:
   generated mutant represents and no test catches is a `blind_spot`, even when
   nothing survived. Use `--line` to see which mutants exist there and
   `try-regression.mjs` to show the missing regression is `MISSED` (also in
-  audit-only mode; it does not touch the checkout). Record the production line in `source` and the
-  `try-regression` result in `evidence`. Do not record a blind spot for a
+  audit-only mode; it does not touch the checkout). Record the production line
+  in `source` and the `try-regression` result in `evidence`. Do not record a blind spot for a
   regression a `gap` cluster already covers; a test already explained by a
   cluster gets its own `tests[]` entry only when its name over-claims.
 - Uncovered lines: report as coverage gaps; propose tests only for behaviour in

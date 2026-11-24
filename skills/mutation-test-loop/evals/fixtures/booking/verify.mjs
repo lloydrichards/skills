@@ -40,7 +40,11 @@ const vitest = (cwd) =>
   spawnSync(process.execPath, [join(here, "node_modules/vitest/vitest.mjs"), "run"], { cwd, encoding: "utf8" })
 
 assert.ok(existsSync(join(here, "node_modules/vitest")), "Run npm install in the fixture first")
-assert.equal(readFileSync(join(here, "src/booking.mjs"), "utf8"), originalSource, "Production source must be unchanged")
+assert.equal(
+  readFileSync(join(here, "src/booking.mjs"), "utf8").replace(/\r\n/g, "\n"),
+  originalSource,
+  "Production source must be unchanged",
+)
 
 const baseline = vitest(here)
 assert.equal(baseline.status, 0, `Fixture tests must pass:\n${baseline.stdout}\n${baseline.stderr}`)
@@ -76,6 +80,7 @@ const regressions = [
   ["non-integer nights accepted", (s) => s.replace("!Number.isInteger(nights) || nights < 1", "nights < 1")],
 ]
 const missed = []
+try {
 for (const [name, mutate] of regressions) {
   const mutated = mutate(originalSource)
   assert.notEqual(mutated, originalSource, `Regression "${name}" did not apply`)
@@ -92,6 +97,8 @@ for (const [name, mutate] of regressions) {
     rmSync(copy, { recursive: true, force: true })
   }
 }
-rmSync(join(here, ".verify-tmp"), { recursive: true, force: true })
+} finally {
+  rmSync(join(here, ".verify-tmp"), { recursive: true, force: true })
+}
 assert.deepEqual(missed, [], `The rewritten tests miss: ${missed.join(", ")}`)
 console.log("rewrite checks passed")

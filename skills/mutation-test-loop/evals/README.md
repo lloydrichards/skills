@@ -19,6 +19,7 @@ The fixture needs `npm install` (Stryker 10.1.1, Vitest 5.0.3), so the harness
 must allow network access:
 
 ```sh
+export MUTATION_NOTES_VALIDATOR="$PWD/skills/mutation-test-loop/scripts/validate-notes.mjs"
 bun tools/skills-eval/run.ts --skill mutation-test-loop --eval booking-audit-only --allow-host-tools
 bun tools/skills-eval/run.ts --skill mutation-test-loop --eval booking-audit-and-rewrite --allow-host-tools
 ```
@@ -32,8 +33,9 @@ bun tools/skills-eval/run.ts --skill mutation-test-loop --eval booking-audit-and
   on any tier, SAVE20 ignoring tier, premium always discounted, and non-integer
   nights accepted.
 
-Set `MUTATION_NOTES_VALIDATOR` to the skill's `scripts/validate-notes.mjs` path
-to also validate the notes.
+The harness passes its environment to `verify.mjs`, so the exported
+`MUTATION_NOTES_VALIDATOR` also validates the notes; without it, notes
+structure is not checked.
 
 Grade the remaining expectations in `evals.json` against the transcript: the
 weak-test finding, the blind-spot finding in audit-only mode, the batching,

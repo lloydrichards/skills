@@ -8,7 +8,7 @@
       "prompt": "Run `npm install`, then mutation-audit the booking tests. I don't trust tests that have never failed. Audit only: do not change tests or production code. Write the audit notes to reports/mutation/audit-notes.json and tell me which tests are weak and why.",
       "harness": {
         "testCommand": ["node", "verify.mjs", "--audit-only"],
-        "allowedChangedPaths": ["reports/**", "package-lock.json", "node_modules/**", ".stryker-tmp/**"],
+        "allowedChangedPaths": ["reports", "package-lock.json"],
         "expectedState": "completed",
         "requireSkillRead": true
       },
@@ -29,7 +29,7 @@
       "prompt": "Run `npm install`, then mutation-test the booking module and fix the weak tests you find. You may edit tests but not src/. Keep the audit notes in reports/mutation/audit-notes.json and show me the score before and after.",
       "harness": {
         "testCommand": ["node", "verify.mjs"],
-        "allowedChangedPaths": ["test/booking.test.mjs", "reports/**", "package-lock.json", "node_modules/**", ".stryker-tmp/**"],
+        "allowedChangedPaths": ["test/booking.test.mjs", "reports", "package-lock.json"],
         "expectedState": "completed",
         "requireSkillRead": true
       },
@@ -46,11 +46,11 @@
       "id": 3,
       "name": "stryker-unavailable-fallback",
       "prompt": "Mutation-audit test/payment.test.mjs, which uses node:test. The machine has no network access, so nothing can be installed. Audit only.",
-      "expected_output": "The agent follows the fallback order: it cannot install Stryker, so it uses manual mode in a throwaway copy with batched hand mutations, records engine manual in the notes, and never edits the user's checkout to restore mutations.",
+      "expected_output": "The agent follows the fallback order: it cannot install Stryker, so it uses manual mode, checking hand-written regressions one module at a time with try-regression.mjs, records engine manual in the notes, and never edits the user's checkout to apply or restore mutations.",
       "expectations": [
         "The agent does not claim a Stryker run happened.",
-        "Manual mutations happen in a disposable copy, not by reverse edits in the user's checkout.",
-        "Hand mutations are batched by module rather than one subagent per test.",
+        "Hand-written regressions run through try-regression.mjs, never as edits in the user's checkout.",
+        "Work is batched by source module rather than one subagent per test, and MISSED regressions are recorded as gap clusters with manual mutant descriptions.",
         "The notes record engine manual and the final report states the reduced evidence."
       ]
     }

@@ -94,8 +94,8 @@ tests.forEach((entry, index) => {
   if (entry.signal === "blind_spot" && !text(entry.source)) {
     errors.push(`${where}.source must name the production file:line of the blind spot`)
   }
-  if (entry.signal === "blind_spot" && entry.resolution === "resolved" && !text(entry.evidence)) {
-    errors.push(`${where}.evidence must show the new test fails against the missing regression`)
+  if (entry.signal === "blind_spot" && !text(entry.evidence)) {
+    errors.push(`${where}.evidence must cite the try-regression result for the blind spot`)
   }
   if (campaign.mode === "audit-only" && entry.resolution === "resolved" && entry.action !== "none") {
     errors.push(`${where} cannot be resolved by a ${entry.action} in audit-only mode`)
