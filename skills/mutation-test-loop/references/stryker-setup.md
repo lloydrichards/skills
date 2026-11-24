@@ -87,8 +87,13 @@ tests into "suspect survivors". Confirm a suspect, or any survivor that looks
 obviously killable, with a narrow re-run before writing tests for it:
 
 ```bash
-npx stryker run --incremental --force --mutate "src/rate-limit.ts:41"
+npx stryker run reports/mutation/stryker.config.json --force --mutate "src/rate-limit.ts:41-41"
 ```
+
+Always pass the config path, or Stryker silently runs with defaults (no JSON
+reporter, bail on). A single-line range needs both ends (`:41-41`); `:41`
+selects nothing. A narrowed run rewrites `mutation.json` for that slice only,
+so compare it with `before.json` rather than treating it as the whole scope.
 
 ## Reducing noise
 
@@ -114,9 +119,12 @@ Use the first that works and say which one you used:
    judgements need manual confirmation.
 3. The ecosystem's own mutation tool for other languages (for example
    mutmut, cargo-mutants, PIT), summarised by hand into the same verdicts.
-4. Manual mode: when no tool can run, hand-craft one production-only mutation
-   per test claim in a throwaway worktree, run the focused test, and record the
-   result in the audit notes with `engine: "manual"`. Batch several tests per
-   worker by module; restore by discarding the worktree, not by reverse edits in
-   the user's checkout.
+4. Manual mode: when no tool can run, work one source module at a time. For
+   each behaviour the tests claim, write one production-only regression and
+   check it with `scripts/try-regression.mjs`, which runs in a temporary copy
+   and never edits the checkout. Record `engine: "manual"`. A `MISSED`
+   regression becomes a `gap` cluster whose `mutants` entry describes it, for
+   example `"manual: src/payment.mjs:12 refund ignores currency"`, with the
+   `try-regression` output in `reason`. Summarise `CAUGHT` checks per test file
+   in the final report; they need no notes entry.
 5. Otherwise mark the scope `blocked` with the concrete reason.

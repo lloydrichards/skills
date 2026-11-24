@@ -81,8 +81,13 @@ const analyse = (report) => {
   }
 
   const mutants = []
+  let unlocated = 0
   for (const [file, entry] of Object.entries(report.files)) {
     for (const m of entry.mutants ?? []) {
+      if (!m.location?.start || !m.location?.end) {
+        unlocated++
+        continue
+      }
       const killedBy = m.killedBy ?? []
       const coveredBy = m.coveredBy ?? []
       // Known Vitest-runner defects can report a mutant as Survived when no
@@ -142,8 +147,11 @@ const analyse = (report) => {
     : null
 
   const bail = report.config?.disableBail !== true
+  const perTest = tests.size > 0
   return {
     disableBail: !bail,
+    perTestData: perTest,
+    unlocatedMutants: unlocated,
     mutantsOnLine,
     counts,
     mutationScore: scored ? Number(((100 * detected) / scored).toFixed(2)) : null,
@@ -153,13 +161,16 @@ const analyse = (report) => {
     suspectSurvivors: mutants
       .filter((m) => m.status === "SuspectSurvived")
       .map(({ key, original, mutated }) => ({ key, original, mutated })),
-    testsThatNeverFail: [...tests.values()].filter((t) => t.kills === 0).map(({ file, name, line }) => ({ file, name, line })),
-    testsWithoutUniqueKills: bail
+    testsThatNeverFail: perTest
+      ? [...tests.values()].filter((t) => t.kills === 0).map(({ file, name, line }) => ({ file, name, line }))
+      : null,
+    testsWithoutUniqueKills: bail || !perTest
       ? null
       : [...tests.values()].filter((t) => t.kills > 0 && t.uniqueKills === 0).map(({ file, name, kills }) => ({ file, name, kills })),
     tests: [...tests.values()],
     noCoverage: [...noCoverage.entries()].map(([file, lines]) => ({ file, lines: [...lines].sort((a, b) => a - b) })),
     survivorKeys: mutants.filter((m) => m.status === "Survived").map((m) => m.key),
+    suspectKeys: new Set(mutants.filter((m) => m.status === "SuspectSurvived").map((m) => m.key)),
     detectedKeys: new Set(mutants.filter((m) => m.status === "Killed" || m.status === "Timeout").map((m) => m.key)),
   }
 }
@@ -173,12 +184,15 @@ if (options.has("--compare")) {
   comparison = {
     nowKilled: before.survivorKeys.filter((k) => current.detectedKeys.has(k)),
     stillSurviving: before.survivorKeys.filter((k) => now.has(k)),
+    nowSuspect: before.survivorKeys.filter((k) => current.suspectKeys.has(k)),
     newSurvivors: current.survivorKeys.filter((k) => !before.survivorKeys.includes(k)),
-    notInCurrentRun: before.survivorKeys.filter((k) => !now.has(k) && !current.detectedKeys.has(k)),
+    notInCurrentRun: before.survivorKeys.filter(
+      (k) => !now.has(k) && !current.detectedKeys.has(k) && !current.suspectKeys.has(k),
+    ),
   }
 }
 
-const { survivorKeys, detectedKeys, ...summary } = current
+const { survivorKeys, detectedKeys, suspectKeys, ...summary } = current
 const output = { ...summary, comparison }
 if (options.has("--json")) writeFileSync(options.get("--json"), `${JSON.stringify(output, null, 2)}\n`)
 
@@ -188,8 +202,11 @@ const list = (items, render) => {
   if (items.length > max) lines.push(`- … ${items.length - max} more (see --json output)`)
 }
 lines.push("# Mutation triage view", "")
+if (output.unlocatedMutants) lines.push(`> Skipped ${output.unlocatedMutants} mutants without a location.`, "")
 lines.push(`Score: ${output.mutationScore ?? "n/a"}% · ${Object.entries(output.counts).map(([k, v]) => `${k} ${v}`).join(" · ")}`)
-if (!output.disableBail) {
+if (!output.perTestData) {
+  lines.push("", "> This report has no per-test data (for example Stryker's command runner). Test-level sections are omitted; judge tests by hand.")
+} else if (!output.disableBail) {
   lines.push("", "> Bail was on: only the first failing test is credited per mutant. Per-test kill counts are partial; rerun with disableBail for test-level judgements.")
 }
 lines.push("", `## Survivor clusters (${output.survivorClusters.length})`, "")
@@ -206,9 +223,11 @@ if (output.suspectSurvivors.length) {
   lines.push("", `## Suspect survivors (${output.suspectSurvivors.length}): no test ran against them; confirm before acting`, "")
   list(output.suspectSurvivors, (m) => `- ${m.key}`)
 }
-lines.push("", `## Tests that never fail (${output.testsThatNeverFail.length})`, "")
-lines.push("> Zero here does not rule out blind spots: Stryker cannot generate every regression. Run the claim check.", "")
-list(output.testsThatNeverFail, (t) => `- ${t.file} › ${t.name} (line ${t.line ?? "?"})`)
+if (output.testsThatNeverFail) {
+  lines.push("", `## Tests that never fail (${output.testsThatNeverFail.length})`, "")
+  lines.push("> Zero here does not rule out blind spots: Stryker cannot generate every regression. Run the claim check.", "")
+  list(output.testsThatNeverFail, (t) => `- ${t.file} › ${t.name} (line ${t.line ?? "?"})`)
+}
 if (output.testsWithoutUniqueKills) {
   lines.push("", `## Tests without unique kills (${output.testsWithoutUniqueKills.length}): overlap candidates, not deletions`, "")
   list(output.testsWithoutUniqueKills, (t) => `- ${t.file} › ${t.name} (${t.kills} shared kills)`)
@@ -219,8 +238,9 @@ if (comparison) {
   lines.push("", "## Compared with previous report", "")
   lines.push(`- Now killed: ${comparison.nowKilled.length}`)
   lines.push(`- Still surviving: ${comparison.stillSurviving.length}`)
+  lines.push(`- Now suspect (no test ran against them; confirm): ${comparison.nowSuspect.length}`)
   lines.push(`- New survivors: ${comparison.newSurvivors.length}`)
-  lines.push(`- Not in this run (out of scope or code changed): ${comparison.notInCurrentRun.length}`)
+  lines.push(`- Not in this run (narrowed scope, or code or file names changed): ${comparison.notInCurrentRun.length}`)
   for (const key of comparison.stillSurviving.slice(0, max)) lines.push(`  - still: ${key}`)
   for (const key of comparison.newSurvivors.slice(0, max)) lines.push(`  - new: ${key}`)
 }
@@ -244,7 +264,7 @@ if (output.mutantsOnLine) {
       ? ` · now killed ${comparison.nowKilled.length}, still surviving ${comparison.stillSurviving.length}, new ${comparison.newSurvivors.length}`
       : ""
     console.log(
-      `Score ${output.mutationScore ?? "n/a"}% · ${output.survivorClusters.length} survivor clusters · ${output.suspectSurvivors.length} suspect · ${output.testsThatNeverFail.length} never fail${compared} → ${options.get("--md")}`,
+      `Score ${output.mutationScore ?? "n/a"}% · ${output.survivorClusters.length} survivor clusters · ${output.suspectSurvivors.length} suspect · ${output.testsThatNeverFail?.length ?? "n/a"} never fail${compared} → ${options.get("--md")}`,
     )
   } else process.stdout.write(markdown)
 }

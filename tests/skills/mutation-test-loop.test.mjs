@@ -1,7 +1,14 @@
 import { describe, it as test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -158,6 +165,18 @@ void describe("mutation report triage", () => {
     );
   });
 
+  void test("omits test-level judgements when the report has no per-test data", async () => {
+    await withTemp(async (directory) => {
+      const report = JSON.parse(await readFile(before, "utf8"));
+      delete report.testFiles;
+      const file = join(directory, "command-runner.json");
+      await writeFile(file, JSON.stringify(report));
+      const triage = await summary([file]);
+      assert.equal(triage.testsThatNeverFail, null);
+      assert.equal(triage.testsWithoutUniqueKills, null);
+    });
+  });
+
   void test("rejects input that is not a Stryker report", async () => {
     await withTemp(async (directory) => {
       const file = join(directory, "other.json");
@@ -229,7 +248,7 @@ void describe("mutation audit notes validation", () => {
     await rejects(notes, /source must name the production file:line/);
   });
 
-  void test("requires manual evidence before resolving a blind spot", async () => {
+  void test("requires try-regression evidence for every blind spot", async () => {
     const notes = validNotes();
     notes.tests.push({
       test: "test/booking.test.mjs › rejects a zero-night booking",
@@ -237,9 +256,9 @@ void describe("mutation audit notes validation", () => {
       source: "src/booking.mjs:2",
       note: "fractional nights never tested",
       action: "rewrite",
-      resolution: "resolved",
+      resolution: "open",
     });
-    await rejects(notes, /evidence must show the new test fails/);
+    await rejects(notes, /evidence must cite the try-regression result/);
   });
 
   void test("requires a note listing worktree differences on completion", async () => {
@@ -303,6 +322,100 @@ void describe("hand-written regression check", () => {
       const result = attempt(directory);
       assert.equal(result.status, 1, result.stderr);
       assert.match(result.stdout, /MISSED/);
+    });
+  });
+
+  void test("refuses to judge a regression when the copy already fails", async () => {
+    await withTemp(async (directory) => {
+      await project(directory, "allowed(2, 2)");
+      const result = attempt(directory);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /fail in the unmodified copy/);
+    });
+  });
+
+  void test("treats a missing test command as a setup error, not a missed regression", async () => {
+    await withTemp(async (directory) => {
+      await project(directory, "allowed(1, 2)");
+      const result = spawnSync(
+        process.execPath,
+        [
+          tryRegression,
+          "--file",
+          "limit.mjs",
+          "--find",
+          "used < limit",
+          "--replace",
+          "false",
+          "--",
+          "definitely-not-a-command",
+        ],
+        { cwd: directory, encoding: "utf8" },
+      );
+      assert.equal(result.status, 2);
+      assert.deepEqual((await readdir(directory)).sort(), [
+        "check.mjs",
+        "limit.mjs",
+      ]);
+    });
+  });
+
+  void test("copies nested folders that share a skipped root name", async () => {
+    await withTemp(async (directory) => {
+      await mkdir(join(directory, "lib", "reports"), { recursive: true });
+      await writeFile(
+        join(directory, "lib", "reports", "limit.mjs"),
+        "export const allowed = (used, limit) => used < limit\n",
+      );
+      await writeFile(
+        join(directory, "check.mjs"),
+        'import { allowed } from "./lib/reports/limit.mjs"\nif (!(allowed(1, 2) && !allowed(2, 2))) process.exit(1)\n',
+      );
+      const result = spawnSync(
+        process.execPath,
+        [
+          tryRegression,
+          "--file",
+          "lib/reports/limit.mjs",
+          "--find",
+          "used < limit",
+          "--replace",
+          "used <= limit",
+          "--",
+          process.execPath,
+          "check.mjs",
+        ],
+        { cwd: directory, encoding: "utf8" },
+      );
+      assert.equal(result.status, 0, result.stderr);
+    });
+  });
+
+  void test("keeps replacement text literal", async () => {
+    await withTemp(async (directory) => {
+      await project(directory, "allowed(1, 2)");
+      await writeFile(
+        join(directory, "check.mjs"),
+        'import { readFileSync } from "node:fs"\nif (!readFileSync("limit.mjs", "utf8").includes("$&")) process.exit(0)\nprocess.exit(1)\n',
+      );
+      const result = spawnSync(
+        process.execPath,
+        [
+          tryRegression,
+          "--file",
+          "limit.mjs",
+          "--find",
+          "used < limit",
+          "--replace",
+          "used < limit /* $& */",
+          "--",
+          process.execPath,
+          "check.mjs",
+        ],
+        { cwd: directory, encoding: "utf8" },
+      );
+      // The check fails only when "$&" reaches the copy literally.
+      assert.equal(result.status, 0, result.stderr);
     });
   });
 
