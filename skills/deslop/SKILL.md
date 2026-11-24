@@ -65,7 +65,7 @@ Do not remove or flatten code that:
 Honor local standards first. In TypeScript projects, common defaults are:
 
 - Use ES modules and the repository's import ordering style.
-- Keep explicit return types on exported APIs, recursive helpers, service/layer boundaries, and important package boundaries.
+- Keep explicit return types on a package's public exports (its public modules, not internal ones), recursive helpers, and service shapes. Infer internal-module exports and private helpers.
 - Prefer explicit props/input types for components and command surfaces.
 - Use the project's error-handling style; avoid adding broad `try`/`catch` unless local code does that.
 - Keep naming aligned with canonical domain terms already used in the package.

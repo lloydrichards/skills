@@ -4,22 +4,18 @@ Use this when defining service contracts, `Context.Service` classes, implementat
 
 ## Canonical Service Shape
 
-Declare the public shape first, then use a domain-named `Context.Service` class as the service identity. Keep construction and production layers on the class so callers can discover them together.
+Declare the public shape in the `Context.Service` generic and keep the production layer on the class, as upstream's service guide does, so callers discover identity, contract, and construction together.
 
 ```ts
-export interface UserStoreShape {
+export class UserStore extends Context.Service<UserStore, {
   readonly findById: (
     id: UserId,
   ) => Effect.Effect<User, UserNotFound | UserStoreUnavailable>
   readonly save: (
     user: User,
   ) => Effect.Effect<void, DuplicateEmail | UserStoreUnavailable>
-}
-
-export class UserStore extends Context.Service<UserStore, UserStoreShape>()(
-  "app/UserStore",
-) {
-  static readonly make = Effect.gen(function* () {
+}>()("app/UserStore") {
+  static readonly layer = Layer.effect(UserStore, Effect.gen(function* () {
     const database = yield* Database
 
     const findById = Effect.fn("UserStore.findById")(function* (id: UserId) {
@@ -32,29 +28,19 @@ export class UserStore extends Context.Service<UserStore, UserStoreShape>()(
       return yield* Effect.die("implementation omitted")
     })
 
-    return {
-      findById,
-      save,
-    } satisfies UserStoreShape
-  })
-
-  static readonly Live = Layer.effect(this, this.make).pipe(
-    Layer.satisfiesServicesType<Database>(),
-  )
-
-  static readonly Default = this.Live.pipe(
-    Layer.provide(Database.Default),
-    Layer.satisfiesServicesType<never>(),
-  )
+    return UserStore.of({ findById, save })
+  }))
 }
+
+// Refer to the shape as UserStore["Service"] when you need it.
 ```
 
 Guidance:
 
-- Name the shape after the domain service, such as `UserStoreShape`; do not use generic `Interface` / `Service` names by default.
 - Define public and non-trivial effectful methods with `Effect.fn("Service.operation")`.
-- Acquire dependencies once in `make`, then define methods there so they close over the acquired implementations.
-- Return the implementation with `satisfies ServiceShape` so contract drift is caught next to construction.
+- Acquire dependencies once in the layer's `Effect.gen`, then define methods there so they close over the acquired implementations.
+- Return the implementation with `X.of({ ... })`, which checks it against the declared shape.
+- Add a `make` (as an option or static) only when several layers share construction or construction takes arguments.
 - Keep the service class focused on identity, construction, and production layers. Keep unrelated helpers and test implementations elsewhere.
 - Follow an established project-local module convention when it differs. Do not introduce barrels, TypeScript namespaces, or self-reexported module namespaces as a general Effect convention.
 
@@ -110,7 +96,7 @@ Guidance:
 
 Public service methods should normally have `R = never`. A database, logger, HTTP client, filesystem, or other implementation dependency leaking from a method forces callers to know how the service is built.
 
-Yield implementation dependencies in `make` and close over their concrete values. Also inspect helpers called by public methods: a helper that yields `Database` still leaks `Database` through its caller.
+Yield implementation dependencies while building the layer and close over their concrete values. Also inspect helpers called by public methods: a helper that yields `Database` still leaks `Database` through its caller.
 
 Non-`never` requirements are valid when the requirement is an intentional part of the public capability. Examples include an explicitly scoped operation or a platform/runtime capability deliberately supplied at the application edge. Make that requirement visible in the shape and explain why callers own it.
 
@@ -124,11 +110,9 @@ Layer.sync(Service, () => implementation) // lazy and synchronous
 Layer.effect(Service, make) // effectful acquisition
 ```
 
-- `make` may require implementation services.
-- `Default` means a fully wired production layer with `RequirementsIn = never`. Enforce this with `Layer.satisfiesServicesType<never>()`.
-- Use `Live`, `WithoutDependencies`, or another explicit name when application-level composition intentionally supplies requirements.
-- Do not invent credentials, database choices, endpoints, or other deployment authority merely to manufacture a `Default` layer.
-- If both open and fully wired forms are useful, derive `Default` from `Live` and provide the dependency layers there.
+- Name the primary layer `layer`, and name variants for what differs: `layerNoDeps` (requirements left open), `layerMemory`, `layerTest`, `layerConfig`. v4 retired v3's `Live` and `Default`.
+- Upstream's composition example has `layer` wire everything, driver included, and `layerNoDeps` leave requirements open. Some projects instead let `layer` leave app-chosen platform services and drivers open. Follow the project's stated convention, and assert intent with `Layer.satisfiesServicesType<...>()` when it helps.
+- Do not invent credentials, database choices, endpoints, or other deployment authority merely to manufacture a fully wired layer.
 - Prefer composing named layers once near the application boundary.
 - Use `Layer.provide(...)` to hide an implementation dependency and `Layer.provideMerge(...)` only when downstream consumers intentionally need it too.
 - Use `Layer.mergeAll(...)` for independent exposed layers, not to silence missing-requirement errors.
@@ -201,9 +185,9 @@ Use `Effect.forkScoped`, `FiberSet`, or `FiberMap` for scoped background work. D
 
 - The service follows the repository's chosen style: a domain-named class by default, or the optional module namespace convention where explicitly adopted. The class self type matches its identity.
 - The returned implementation satisfies the declared shape.
-- Implementation dependencies are acquired once in `make`, or in the optional module-style layer, and do not leak from methods.
+- Implementation dependencies are acquired once while building the layer and do not leak from methods.
 - Every public method requirement is either `never` or explicitly intentional.
-- `Default` is fully wired; partial layers have names that advertise open requirements.
+- Layer names follow v4 (`layer` plus descriptive variants), and open requirements match the project's convention for `layer`.
 - Public errors describe caller decisions rather than implementation libraries.
 - Required lookup failures are not hidden in the success channel.
 - Effect values are yielded, returned, or composed; none float unused.

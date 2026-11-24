@@ -7,17 +7,18 @@ Use this when defining typed failures, adapting throwing or rejecting APIs, reco
 Use an `Effect` error channel for expected, typed failures. Defects represent unexpected bugs or unwrapped throws; interruption represents cancellation. Do not flatten defects or interruption into ordinary domain errors without a boundary-specific reason.
 
 ```ts
-import { Data, Effect } from "effect"
+import { Effect, Schema } from "effect"
 
-export class UserNotFound extends Data.TaggedError("UserNotFound")<{
-  readonly id: string
-}> {}
+export class UserNotFound extends Schema.TaggedError<UserNotFound>()("UserNotFound", {
+  id: Schema.String,
+}) {}
 
-const getUser = (id: string) =>
-  Effect.fail(new UserNotFound({ id }))
+const getUser = Effect.fnUntraced(function* (id: string) {
+  return yield* new UserNotFound({ id })
+})
 ```
 
-- Use `Data.TaggedError` for runtime-internal failures. Use `Schema.TaggedError` when an error needs schema integration, is serialized, crosses an I/O boundary, or is user-facing.
+- Define errors with `Schema.TaggedError`, as every upstream v4 example does, so one base class works whether or not the error later crosses a boundary. Keep the original cause as `cause: Schema.Defect()`.
 - Translate infrastructure errors into domain errors at adapter boundaries.
 - Include diagnostic context such as operation and stable identifiers, not secrets or unbounded payloads.
 - Keep precise errors when callers make different recovery decisions. Group implementation failures only when callers genuinely handle them the same way.
