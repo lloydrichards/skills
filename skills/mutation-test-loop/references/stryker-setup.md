@@ -60,7 +60,8 @@ agreement).
 | Symptom | Cause | Fix |
 |---|---|---|
 | `Unknown stryker config option "vitest"` or runner not found | Isolated installs (bun, pnpm) hide the plugin from Stryker's discovery | Add `"plugins": ["./node_modules/@stryker-mutator/vitest-runner/dist/src/index.js"]` |
-| `ts.parseConfigFileTextToJson is not a function` | TypeScript 7 removed the API Stryker uses to rewrite tsconfig in its sandbox | `"inPlace": true`, only in a throwaway worktree or copy |
+| `ts.parseConfigFileTextToJson is not a function` | TypeScript 7 removed the API Stryker uses to rewrite tsconfig in its sandbox | When tsconfigs reach outside the package only through package-name `extends` (no relative paths to rewrite), point `"tsconfigFile"` at a path that does not exist (for example `".stryker-no-tsconfig.json"`) to skip the rewrite. Otherwise `"inPlace": true`, only in a throwaway worktree or copy |
+| Golden, snapshot, or fixture-byte tests fail only under Stryker | Stryker prepends `// @ts-nocheck` to test and fixture files in the sandbox, changing bytes those tests compare | `"disableTypeChecks": false`. Safe without the TypeScript checker: Vitest strips types without checking them |
 | Tests fail only under Stryker with missing paths | Tests reach outside the package (`../../..`) and the sandbox copy breaks them | `"inPlace": true` in a throwaway worktree or copy |
 | Every Vitest project runs | No project selection (#6215) | Point `vitest.configFile` at a single-project config |
 | Out of memory or doubled coverage | `isolate: false` (#6331) | Use a Stryker-only Vitest config with `isolate: true` |
