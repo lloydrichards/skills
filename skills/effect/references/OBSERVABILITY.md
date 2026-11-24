@@ -2,7 +2,7 @@
 
 Use this when adding structured logs, log annotations, spans, metrics, tracing, OpenTelemetry, or OTLP exporters.
 
-Core logging, metrics, and tracing APIs are stable imports from `"effect"`. Exporter integrations under `effect/unstable/observability` are version-sensitive and must be verified against the pinned Effect version.
+Core logging, metrics, and tracing APIs are stable imports from `"effect"`. Exporter integrations under `effect/observability` (older v4 betas: `effect/unstable/observability`) are version-sensitive and must be verified against the pinned Effect version.
 
 ## Logging
 
@@ -64,6 +64,6 @@ const request = callProvider(input).pipe(
 
 ## OTLP Exporters
 
-For new projects, prefer the current `effect/unstable/observability` OTLP modules when their unstable status is acceptable. `Otlp.layerJson(...)` is the compact combined exporter layer; verify its dependencies and configuration against the pinned version.
+For new projects, prefer the `effect/observability` OTLP modules when their unstable status is acceptable. `Otlp.layerJson(...)` is the compact combined exporter layer; verify its dependencies and configuration against the pinned version.
 
 Do not introduce an exporter only to create spans. First establish useful operation names, attributes, logs, and metrics at the application boundaries.

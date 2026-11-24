@@ -89,10 +89,10 @@ Guidance:
 Good service shape:
 
 ```ts
-export interface ProviderEventsShape {
+export class ProviderEvents extends Context.Service<ProviderEvents, {
   readonly events: Stream.Stream<ProviderEvent, ProviderError>
   readonly status: Stream.Stream<ProviderStatus>
-}
+}>()("app/ProviderEvents") {}
 ```
 
 Implementation can use private `Queue` / `SubscriptionRef`; consumers see streams.

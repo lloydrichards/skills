@@ -4,12 +4,9 @@ Use this when writing outgoing HTTP calls, Effect HttpClient adapters, status cl
 
 Use Effect HTTP client modules for outgoing HTTP in app/provider code:
 
-- `effect/unstable/http/HttpClient`
-- `effect/unstable/http/HttpClientRequest`
-- `effect/unstable/http/HttpClientResponse`
-- `effect/unstable/http/HttpClientError`
+- `HttpClient`, `HttpClientRequest`, `HttpClientResponse`, and `HttpClientError` from `effect/http` (4.x; older v4 betas used `effect/unstable/http`). The module is still marked `@stability unstable`, so check the pinned version.
 
-Prefer Effect HttpClient in Effect application and provider code when its typed errors, layers, and transforms are useful. Raw `fetch` remains reasonable for browser or edge constraints, small adapters, platform transports, and libraries that intentionally avoid unstable Effect HTTP APIs.
+Prefer Effect HttpClient in Effect application and provider code when its typed errors, layers, and transforms are useful. Raw `fetch` remains reasonable for browser or edge constraints, small adapters, platform transports, and libraries that intentionally avoid Effect's HTTP modules, which are still marked unstable.
 
 ## Boundary Shape
 
@@ -60,7 +57,7 @@ Use operation-level `Effect.retry(...)` when retry depends on domain-specific ty
 
 ## Raw Fetch Exception
 
-Use raw `fetch` deliberately when implementing a platform transport, adapting an API that cannot use Effect HttpClient, or targeting a runtime/library boundary where the unstable Effect HTTP modules are not an appropriate dependency.
+Use raw `fetch` deliberately when implementing a platform transport, adapting an API that cannot use Effect HttpClient, or targeting a runtime/library boundary where Effect's HTTP modules are not an appropriate dependency.
 
 If a temporary raw `fetch` boundary is unavoidable, keep it inside an adapter service and still use Effect boundary discipline.
 

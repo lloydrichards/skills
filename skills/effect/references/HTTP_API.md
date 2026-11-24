@@ -2,7 +2,7 @@
 
 Use this when defining incoming schema-first HTTP APIs, handlers, API middleware, OpenAPI documents, or typed clients.
 
-`effect/unstable/httpapi` is an unstable Effect v4 surface. Verify imports and examples against the project-pinned version before editing. This reference covers incoming APIs; use `HTTP_CLIENTS.md` for outgoing provider calls.
+`effect/http-api` (4.x; older v4 betas used `effect/unstable/httpapi`) is marked `@stability unstable`. Verify imports and examples against the project-pinned version before editing. This reference covers incoming APIs; use `HTTP_CLIENTS.md` for outgoing provider calls.
 
 ## Contract First
 
@@ -10,7 +10,7 @@ Define a shared `HttpApi` contract with groups and endpoints. The same declarati
 
 ```ts
 import { Schema } from "effect"
-import { HttpApi, HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
+import { HttpApi, HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
 
 export const Api = HttpApi.make("AppApi").add(
   HttpApiGroup.make("users")
@@ -50,7 +50,7 @@ Implement handlers group by group, then build a route layer from the full API.
 
 ```ts
 import { Layer } from "effect"
-import { HttpApiBuilder } from "effect/unstable/httpapi"
+import { HttpApiBuilder } from "effect/http-api"
 
 const UsersHandlers = HttpApiBuilder.group(Api, "users", (handlers) =>
   handlers.handle("get", ({ params }) => UserService.get(params.id)),

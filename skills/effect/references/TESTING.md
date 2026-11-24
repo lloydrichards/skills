@@ -89,20 +89,14 @@ it.effect("publishes exactly once", () =>
 Keep mocks, fixtures, stateful fakes, and test-control services outside the production service class, normally in a test-support module. Use a test-control service and layer for reusable/stateful fakes.
 
 ```ts
-export interface NotifierShape {
+export class Notifier extends Context.Service<Notifier, {
   readonly send: (message: Message) => Effect.Effect<void, SendError>
-}
+}>()("@app/Notifier") {}
 
-export class Notifier extends Context.Service<Notifier, NotifierShape>()(
-  "@app/Notifier",
-) {}
-
-export interface NotifierTestShape extends NotifierShape {
+export class NotifierTest extends Context.Service<NotifierTest, Notifier["Service"] & {
   readonly sentMessages: () => Effect.Effect<ReadonlyArray<Message>>
   readonly failNextSend: (error: SendError) => Effect.Effect<void>
-}
-
-export class NotifierTest extends Context.Service<NotifierTest, NotifierTestShape>()(
+}>()(
   "@app/Notifier/Test",
 ) {}
 
@@ -142,7 +136,7 @@ Guidance:
 - Use function-valued service members, including zero-argument operations, so `Effect.fn` fits naturally.
 - Use `Layer.succeed` for complete dead-simple static test implementations.
 - Use `Layer.mock` only for tiny local partial mocks where omitted members should fail loudly if used.
-- A mock replaces the service boundary; it should not depend on the production service's `Default` layer.
+- A mock replaces the service boundary; it should not depend on the production service's `layer`.
 - A no-op used by production is an alternate adapter, not a test mock. Export it separately from the production service class.
 
 ## Config In Tests
